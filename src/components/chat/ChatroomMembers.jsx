@@ -1,51 +1,52 @@
 import { useEffect, useState } from "react";
-import {
-  doc,
-  getDoc,
-} from "firebase/firestore";
+import { doc, getDoc, onSnapshot } from "firebase/firestore";
 import { db } from "../../firebase/firebase";
 
-export default function ChatroomMembers({ chatroomId, currentUserId }) {
+export default function ChatroomMembers({
+  chatroomId,
+  currentUserId,
+  removable = false,
+  onRemoveMember,
+}) {
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    async function fetchMembers() {
-      if (!chatroomId) {
+    if (!chatroomId) {
+      setMembers([]);
+      return;
+    }
+
+    setLoading(true);
+
+    const unsubscribe = onSnapshot(doc(db, "chatrooms", chatroomId), async (chatroomSnap) => {
+      if (!chatroomSnap.exists()) {
         setMembers([]);
+        setLoading(false);
         return;
       }
 
-      setLoading(true);
+      const chatroomData = chatroomSnap.data();
+      const memberIds = Array.isArray(chatroomData.members)
+        ? chatroomData.members
+        : [];
 
       try {
-        const chatroomRef = doc(db, "chatrooms", chatroomId);
-        const chatroomSnap = await getDoc(chatroomRef);
-
-        if (!chatroomSnap.exists()) {
-          setMembers([]);
-          setLoading(false);
-          return;
-        }
-
-        const chatroomData = chatroomSnap.data();
-        const memberIds = Array.isArray(chatroomData.members)
-          ? chatroomData.members
-          : [];
-
         const memberPromises = memberIds.map(async (uid) => {
-          const userRef = doc(db, "users", uid);
-          const userSnap = await getDoc(userRef);
+          const userSnap = await getDoc(doc(db, "users", uid));
 
           if (!userSnap.exists()) {
             return {
               uid,
               username: "",
               email: uid,
+              photoURL: "",
+              isMe: uid === currentUserId,
             };
           }
 
           const userData = userSnap.data();
+
           return {
             uid,
             username: userData.username || "",
@@ -63,108 +64,56 @@ export default function ChatroomMembers({ chatroomId, currentUserId }) {
       } finally {
         setLoading(false);
       }
-    }
+    });
 
-    fetchMembers();
+    return () => unsubscribe();
   }, [chatroomId, currentUserId]);
 
   if (!chatroomId) return null;
 
   return (
-    <div style={styles.wrapper}>
-      <h3 style={styles.title}>Members</h3>
-
+    <div className="members-panel">
       {loading ? (
-        <p style={styles.info}>載入中...</p>
+        <p className="muted-text">載入中...</p>
       ) : members.length === 0 ? (
-        <p style={styles.info}>目前沒有成員資料</p>
+        <p className="muted-text">目前沒有成員資料</p>
       ) : (
-        <div style={styles.list}>
-          {members.map((member) => (
-            <div key={member.uid} style={styles.card}>
-              <div style={styles.avatar}>
-                {member.photoURL ? (
-                  <img
-                    src={member.photoURL}
-                    alt="avatar"
-                    style={styles.avatarImage}
-                  />
-                ) : (
-                  <span>
-                    {(member.username || member.email || "?")
-                      .charAt(0)
-                      .toUpperCase()}
-                  </span>
+        <div className="members-list">
+          {members.map((member) => {
+            const displayName = member.username || member.email || member.uid;
+
+            return (
+              <div key={member.uid} className="member-row">
+                <div className="member-avatar">
+                  {member.photoURL ? (
+                    <img src={member.photoURL} alt="avatar" />
+                  ) : (
+                    <span>{displayName.charAt(0).toUpperCase()}</span>
+                  )}
+                </div>
+
+                <div className="member-info">
+                  <strong>
+                    {displayName}
+                    {member.isMe ? " (You)" : ""}
+                  </strong>
+                  <span>{member.email || member.uid}</span>
+                </div>
+
+                {removable && !member.isMe && (
+                  <button
+                    type="button"
+                    className="remove-member-button"
+                    onClick={() => onRemoveMember?.(member.uid)}
+                  >
+                    Remove
+                  </button>
                 )}
               </div>
-
-              <div>
-                <p style={styles.name}>
-                  {member.username || member.email || member.uid}
-                  {member.isMe ? " (You)" : ""}
-                </p>
-                <p style={styles.email}>{member.email || member.uid}</p>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
   );
 }
-
-const styles = {
-  wrapper: {
-    marginTop: "12px",
-    padding: "12px",
-    border: "1px solid #ddd",
-    borderRadius: "10px",
-    background: "#fafafa",
-  },
-  title: {
-    margin: "0 0 10px 0",
-    fontSize: "16px",
-  },
-  info: {
-    margin: 0,
-    fontSize: "14px",
-    opacity: 0.7,
-  },
-  list: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "10px",
-  },
-  card: {
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-  },
-  avatar: {
-    width: "36px",
-    height: "36px",
-    borderRadius: "50%",
-    background: "#dbeafe",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    overflow: "hidden",
-    flexShrink: 0,
-    fontWeight: "bold",
-  },
-  avatarImage: {
-    width: "100%",
-    height: "100%",
-    objectFit: "cover",
-  },
-  name: {
-    margin: 0,
-    fontWeight: "bold",
-    fontSize: "14px",
-  },
-  email: {
-    margin: "2px 0 0 0",
-    fontSize: "12px",
-    opacity: 0.7,
-  },
-};

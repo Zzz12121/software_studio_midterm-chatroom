@@ -7,60 +7,62 @@ import { useAuth } from "./contexts/AuthContext";
 
 export default function App() {
   const { currentUser, loading } = useAuth();
-  const [page, setPage] = useState("signin");
+  const [authPage, setAuthPage] = useState("signin");
+  const [appPage, setAppPage] = useState("chat");
 
   if (loading) {
-    return <h1>載入中...</h1>;
-  }
-
-  if (!currentUser) {
     return (
-      <div style={styles.shell}>
-        <div style={styles.topbar}>
-          <button onClick={() => setPage("signin")}>Sign In</button>
-          <button onClick={() => setPage("signup")} style={{ marginLeft: "8px" }}>
-            Sign Up
-          </button>
-        </div>
-
-        <div style={styles.content}>
-          {page === "signup" ? <SignUpPage /> : <SignInPage />}
-        </div>
+      <div className="app-loading">
+        <h1>Loading...</h1>
       </div>
     );
   }
 
-  return (
-    <div style={styles.shell}>
-      <div style={styles.topbar}>
-        <button onClick={() => setPage("chat")}>Chat</button>
-        <button onClick={() => setPage("profile")} style={{ marginLeft: "8px" }}>
-          Profile
-        </button>
-      </div>
+  if (!currentUser) {
+    return (
+      <div className="auth-shell">
+        <div className="auth-topbar">
+          <button
+            type="button"
+            onClick={() => setAuthPage("signin")}
+            className={authPage === "signin" ? "nav-button active" : "nav-button"}
+          >
+            Sign In
+          </button>
 
-      <div style={styles.content}>
-        {page === "profile" ? <ProfilePage /> : <ChatPage />}
+          <button
+            type="button"
+            onClick={() => setAuthPage("signup")}
+            className={authPage === "signup" ? "nav-button active" : "nav-button"}
+          >
+            Sign Up
+          </button>
+        </div>
+
+        <main className="auth-content">
+          {authPage === "signup" ? <SignUpPage /> : <SignInPage />}
+        </main>
       </div>
-    </div>
-  );
+    );
+  }
+
+  if (appPage === "profile") {
+    return (
+      <div className="profile-shell">
+        <header className="profile-topbar">
+          <button type="button" onClick={() => setAppPage("chat")}>
+            ← Back to Chat
+          </button>
+
+          <h2>Profile Settings</h2>
+        </header>
+
+        <main className="profile-content">
+          <ProfilePage />
+        </main>
+      </div>
+    );
+  }
+
+  return <ChatPage onGoProfile={() => setAppPage("profile")} />;
 }
-
-const styles = {
-  shell: {
-    height: "100vh",
-    display: "grid",
-    gridTemplateRows: "56px 1fr",
-    overflow: "hidden",
-  },
-  topbar: {
-    borderBottom: "1px solid #ccc",
-    padding: "12px",
-    background: "#fff",
-    textAlign: "center",
-  },
-  content: {
-    minHeight: 0,
-    overflow: "hidden",
-  },
-};
