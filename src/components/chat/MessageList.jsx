@@ -154,6 +154,8 @@ export default function MessageList({
     try {
       await updateDoc(doc(db, "chatrooms", chatroomId, "messages", messageId), {
         text: "",
+        imageURL: "",
+        imageName: "",
         unsent: true,
         updatedAt: serverTimestamp(),
       });
@@ -274,6 +276,7 @@ export default function MessageList({
               alignSelf: isMine ? "flex-end" : "flex-start",
               maxWidth: "70%",
               padding: "10px 14px",
+              paddingRight: "48px",
               borderRadius: "12px",
               background: isHighlighted
                 ? "#fde68a"
@@ -282,6 +285,7 @@ export default function MessageList({
                 : "#f3f4f6",
               border: "1px solid #d1d5db",
               transition: "background 0.3s",
+              position: "relative",
             }}
           >
           <div
@@ -395,19 +399,38 @@ export default function MessageList({
               </p>
             )}
 
-            {isMine && !message.unsent && !isEditing && (
-              <div style={{ marginTop: "8px", display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                {message.type !== "image" && (
-                  <button onClick={() => startEdit(message)}>Edit</button>
+            {!message.unsent && !isEditing && (
+              <div className={`message-actions ${isMine ? "mine" : "others"}`}>
+                {isMine && message.type !== "image" && (
+                  <button
+                    type="button"
+                    className="message-action-button"
+                    title="Edit message"
+                    onClick={() => startEdit(message)}
+                  >
+                    ✏️
+                  </button>
                 )}
-                <button onClick={() => handleUnsend(message.id)}>Unsend</button>
-                <button onClick={() => onReply?.(message)}>Reply</button>
-              </div>
-            )}
 
-            {!isMine && !message.unsent && !isEditing && (
-              <div style={{ marginTop: "8px" }}>
-                <button onClick={() => onReply?.(message)}>Reply</button>
+                {isMine && (
+                  <button
+                    type="button"
+                    className="message-action-button"
+                    title="Unsend message"
+                    onClick={() => handleUnsend(message.id)}
+                  >
+                    🗑️
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  className="message-action-button"
+                  title="Reply message"
+                  onClick={() => onReply?.(message)}
+                >
+                  ↩️
+                </button>
               </div>
             )}
           </div>

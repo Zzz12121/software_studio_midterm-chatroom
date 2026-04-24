@@ -877,3 +877,55 @@ select:focus {
     width: 100%;
   }
 }
+/* Hover message actions */
+
+.message-bubble {
+  position: relative;
+}
+
+.message-actions {
+  position: absolute;
+  top: 8px;
+  display: flex;
+  gap: 6px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-4px);
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+}
+
+.message-actions.mine {
+  right: 8px;
+}
+
+.message-actions.others {
+  right: 8px;
+}
+
+.message-bubble:hover .message-actions {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.message-action-button {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #111827;
+  border: 1px solid #d1d5db;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+}
+
+.message-action-button:hover {
+  background: #eff6ff;
+  border-color: #2563eb;
+}
