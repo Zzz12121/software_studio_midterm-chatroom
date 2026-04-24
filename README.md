@@ -34,14 +34,14 @@
 - [✅] 其他成員可在 chatroom 中看到你的訊息
 - [✅] 載入目前 chatroom 的所有歷史訊息
 - [✅] 可邀請新成員加入 chatroom
-- [ ] 可參考 Messenger 的 chatroom 邏輯設計
+- [✅] 可參考 Messenger 的 chatroom 邏輯設計
 
 ---
 
 ## 2. Advanced Components（35%）
 
 ### 2.1 Using framework（5%）
-- [ ] 使用 React 或其他 framework
+- [✅] 使用 React 或其他 framework
 
 ### 2.2 Third-party Sign Up / Sign In（1%）
 - [ ] 使用 Google 或其他第三方帳號登入／註冊
@@ -56,18 +56,18 @@
 - [ ] Button hover 不算 animation
 
 ### 2.5 Deal with problems when sending code（2%）
-- [ ] 處理訊息中包含程式碼或 HTML 標籤的情況
-- [ ] 例如：`<script>alert("example");</script>`
-- [ ] 例如：`<h1>example</h1>`
+- [✅] 處理訊息中包含程式碼或 HTML 標籤的情況
+- [✅] 例如：`<script>alert("example");</script>`
+- [✅] 例如：`<h1>example</h1>`
 
 ### 2.6 User Profile（10%）
-- [ ] Profile 需做成 modal 或獨立頁面
-- [ ] 可編輯並儲存 Profile picture
-- [ ] 可編輯並儲存 Username
-- [ ] 可編輯並儲存 Email
-- [ ] 可編輯並儲存 Phone number
-- [ ] 可編輯並儲存 Address
-- [ ] 在 chatroom 中至少顯示 email、username、profile picture 其中一項
+- [✅] Profile 需做成 modal 或獨立頁面
+- [✅] 可編輯並儲存 Profile picture
+- [✅] 可編輯並儲存 Username
+- [✅] 可編輯並儲存 Email
+- [✅] 可編輯並儲存 Phone number
+- [✅] 可編輯並儲存 Address
+- [✅] 在 chatroom 中至少顯示 email、username、profile picture 其中一項
 
 ### 2.7 Message operation（10%）
 - [ ] Unsend message（只能收回自己傳的訊息）

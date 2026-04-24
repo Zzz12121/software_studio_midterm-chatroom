@@ -345,7 +345,7 @@ export default function MessageList({
                   {message.replyTo.senderId === currentUserId ? " (You)" : ""}
                 </p>
                 <p className="safe-message-text" style={{ fontSize: "14px" }}>
-                  {message.replyTo.text}
+                  {message.replyTo.text || "[圖片]"}
                 </p>
               </div>
             )}
@@ -364,10 +364,29 @@ export default function MessageList({
                   <button onClick={cancelEdit}>Cancel</button>
                 </div>
               </div>
+            ) : message.type === "image" ? (
+              <div style={{ marginTop: "8px" }}>
+                <img
+                  src={message.imageURL}
+                  alt={message.imageName || "sent image"}
+                  style={{
+                    maxWidth: "240px",
+                    maxHeight: "240px",
+                    borderRadius: "10px",
+                    objectFit: "cover",
+                    display: "block",
+                  }}
+                />
+                {message.imageName && (
+                  <p style={{ margin: "6px 0 0 0", fontSize: "12px", opacity: 0.7 }}>
+                    {message.imageName}
+                  </p>
+                )}
+              </div>
             ) : (
-            <p className="safe-message-text">
-              {message.text}
-            </p>
+              <p className="safe-message-text">
+                {message.text}
+              </p>
             )}
 
             {message.edited && !message.unsent && (
@@ -378,7 +397,9 @@ export default function MessageList({
 
             {isMine && !message.unsent && !isEditing && (
               <div style={{ marginTop: "8px", display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                <button onClick={() => startEdit(message)}>Edit</button>
+                {message.type !== "image" && (
+                  <button onClick={() => startEdit(message)}>Edit</button>
+                )}
                 <button onClick={() => handleUnsend(message.id)}>Unsend</button>
                 <button onClick={() => onReply?.(message)}>Reply</button>
               </div>
