@@ -42,6 +42,7 @@ select {
   border-radius: 8px;
   padding: 9px 10px;
   background: white;
+  min-width: 0;
 }
 
 input:focus,
@@ -49,6 +50,8 @@ select:focus {
   outline: 2px solid #93c5fd;
   border-color: #2563eb;
 }
+
+/* Auth pages */
 
 .auth-page {
   height: 100%;
@@ -78,9 +81,11 @@ select:focus {
   gap: 12px;
 }
 
+/* Chat layout */
+
 .chat-layout {
   display: grid;
-  grid-template-columns: 320px 1fr;
+  grid-template-columns: minmax(240px, 320px) minmax(0, 1fr);
   height: 100%;
   min-height: 0;
   overflow: hidden;
@@ -94,11 +99,20 @@ select:focus {
   background: #ffffff;
 }
 
+.chat-sidebar h2 {
+  margin-top: 0;
+}
+
+.chat-sidebar p {
+  word-break: break-word;
+}
+
 .chat-main {
   display: grid;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   height: 100%;
   min-height: 0;
+  overflow: hidden;
   background: #f8fafc;
 }
 
@@ -106,8 +120,17 @@ select:focus {
   border-bottom: 1px solid #e5e7eb;
   padding: 12px 16px;
   overflow-y: auto;
-  max-height: 260px;
+  max-height: 240px;
   background: #ffffff;
+}
+
+.chat-header h2 {
+  margin: 0;
+}
+
+.chat-header p {
+  margin: 6px 0;
+  word-break: break-all;
 }
 
 .message-area {
@@ -124,6 +147,18 @@ select:focus {
   background: #ffffff;
 }
 
+.chat-footer form {
+  display: flex;
+  gap: 12px;
+}
+
+.chat-footer input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Cards / panels */
+
 .chatroom-card {
   padding: 12px;
   margin-bottom: 8px;
@@ -132,7 +167,10 @@ select:focus {
   cursor: pointer;
   background: #ffffff;
   position: relative;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease;
 }
 
 .chatroom-card:hover {
@@ -146,8 +184,9 @@ select:focus {
   border-color: #2563eb;
 }
 
-.message-bubble {
-  animation: messageEnter 0.25s ease-out;
+.chatroom-card p {
+  padding-right: 36px;
+  word-break: break-word;
 }
 
 .panel-card {
@@ -155,6 +194,10 @@ select:focus {
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   background: #ffffff;
+}
+
+.message-bubble {
+  animation: messageEnter 0.25s ease-out;
 }
 
 .unread-badge {
@@ -173,6 +216,21 @@ select:focus {
   padding: 0 6px;
   animation: badgePulse 1.1s ease-in-out infinite;
 }
+
+/* Safe text display for HTML/code messages */
+
+.safe-message-text {
+  margin: 6px 0 0 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.safe-message-text code {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Animations */
 
 @keyframes cardEnter {
   from {
@@ -212,17 +270,33 @@ select:focus {
   }
 }
 
+/* Responsive design */
+
 @media (max-width: 768px) {
   .chat-layout {
-    grid-template-columns: 150px 1fr;
+    grid-template-columns: minmax(120px, 34vw) minmax(0, 1fr);
   }
 
   .chat-sidebar {
     padding: 10px;
   }
 
+  .chat-sidebar h2 {
+    font-size: 18px;
+  }
+
+  .chat-sidebar p {
+    font-size: 12px;
+    word-break: break-word;
+  }
+
   .chat-header {
-    max-height: 220px;
+    max-height: 210px;
+    padding: 10px;
+  }
+
+  .chat-header h2 {
+    font-size: 18px;
   }
 
   .message-area {
@@ -232,14 +306,47 @@ select:focus {
   .chat-footer {
     padding: 10px;
   }
-}
-.safe-message-text {
-  margin: 6px 0 0 0;
-  white-space: pre-wrap;
-  word-break: break-word;
+
+  .chat-footer form {
+    gap: 8px;
+  }
+
+  button {
+    padding: 7px 9px;
+  }
+
+  input,
+  select {
+    padding: 8px;
+  }
 }
 
-.safe-message-text code {
-  white-space: pre-wrap;
-  word-break: break-word;
+@media (max-width: 480px) {
+  .chat-layout {
+    grid-template-columns: 112px minmax(0, 1fr);
+  }
+
+  .chat-sidebar {
+    padding: 8px;
+  }
+
+  .chatroom-card {
+    padding: 8px;
+  }
+
+  .chatroom-card p {
+    font-size: 12px;
+  }
+
+  .chat-header {
+    max-height: 190px;
+  }
+
+  .chat-footer form {
+    flex-direction: column;
+  }
+
+  .chat-footer button {
+    width: 100%;
+  }
 }

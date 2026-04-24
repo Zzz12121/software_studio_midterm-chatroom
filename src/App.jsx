@@ -57,6 +57,7 @@ const styles = {
     borderBottom: "1px solid #ccc",
     padding: "12px",
     background: "#fff",
+    textAlign: "center",
   },
   content: {
     minHeight: 0,
