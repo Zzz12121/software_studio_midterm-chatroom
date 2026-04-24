@@ -4,6 +4,8 @@ import CreateChatroomModal from "../components/chat/CreateChatroomModal";
 import MessageInput from "../components/chat/MessageInput";
 import ChatroomList from "../components/chat/ChatroomList";
 import MessageList from "../components/chat/MessageList";
+import InviteMemberPanel from "../components/chat/InviteMemberPanel";
+import ChatroomMembers from "../components/chat/ChatroomMembers";
 
 export default function ChatPage() {
   const { currentUser, logout } = useAuth();
@@ -40,18 +42,27 @@ export default function ChatPage() {
           <p>{selectedChatroomId || "尚未選擇聊天室"}</p>
 
           {selectedChatroomId && (
-            <input
-              type="text"
-              placeholder="搜尋目前聊天室訊息..."
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              style={{
-                marginTop: "12px",
-                padding: "8px",
-                width: "100%",
-                maxWidth: "320px",
-              }}
-            />
+            <>
+              <input
+                type="text"
+                placeholder="搜尋目前聊天室訊息..."
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                style={{
+                  marginTop: "12px",
+                  padding: "8px",
+                  width: "100%",
+                  maxWidth: "320px",
+                }}
+              />
+
+              <InviteMemberPanel chatroomId={selectedChatroomId} />
+
+              <ChatroomMembers
+                chatroomId={selectedChatroomId}
+                currentUserId={currentUser.uid}
+              />
+            </>
           )}
         </header>
 
@@ -94,7 +105,7 @@ const styles = {
   },
   main: {
     display: "grid",
-    gridTemplateRows: "140px 1fr 150px",
+    gridTemplateRows: "420px 1fr 150px",
     height: "100vh",
   },
   header: {
