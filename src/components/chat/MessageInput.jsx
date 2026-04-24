@@ -45,6 +45,7 @@ export default function MessageInput({
 
       await updateDoc(doc(db, "chatrooms", chatroomId), {
         lastMessage: text.trim(),
+        lastSenderId: currentUserId,
         lastMessageAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });

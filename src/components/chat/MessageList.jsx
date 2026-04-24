@@ -8,6 +8,7 @@ import {
   updateDoc,
   serverTimestamp,
   getDocs,
+  getDoc,
   limit,
 } from "firebase/firestore";
 import { db } from "../../firebase/firebase";
@@ -17,11 +18,14 @@ export default function MessageList({
   currentUserId,
   searchText = "",
   onReply,
+  myBlockedUsers = [],
+  blockedByUsers = [],
 }) {
   const [messages, setMessages] = useState([]);
   const [editingMessageId, setEditingMessageId] = useState("");
   const [editingText, setEditingText] = useState("");
   const [highlightedMessageId, setHighlightedMessageId] = useState("");
+  const [userMap, setUserMap] = useState({});
   const messageRefs = useRef({});
 
   useEffect(() => {
@@ -47,6 +51,60 @@ export default function MessageList({
     return () => unsubscribe();
   }, [chatroomId]);
 
+  useEffect(() => {
+  async function fetchUsers() {
+    const uidSet = new Set();
+
+    messages.forEach((message) => {
+      if (message.senderId) {
+        uidSet.add(message.senderId);
+      }
+
+      if (message.replyTo?.senderId) {
+        uidSet.add(message.replyTo.senderId);
+      }
+    });
+
+    const uidList = Array.from(uidSet);
+
+    if (uidList.length === 0) {
+      setUserMap({});
+      return;
+    }
+
+    try {
+      const result = {};
+
+      for (const uid of uidList) {
+        const userSnap = await getDoc(doc(db, "users", uid));
+
+        if (userSnap.exists()) {
+          const data = userSnap.data();
+
+          result[uid] = {
+            uid,
+            username: data.username || "",
+            email: data.email || "",
+            photoURL: data.photoURL || "",
+          };
+        } else {
+          result[uid] = {
+            uid,
+            username: "",
+            email: "",
+            photoURL: "",
+          };
+        }
+      }
+
+      setUserMap(result);
+    } catch (error) {
+      console.error("Fetch message users error:", error);
+    }
+  }
+
+  fetchUsers();
+}, [messages]);
   async function updateChatroomLastMessage() {
     try {
       const latestQuery = query(
@@ -60,6 +118,7 @@ export default function MessageList({
       if (snapshot.empty) {
         await updateDoc(doc(db, "chatrooms", chatroomId), {
           lastMessage: "",
+          lastSenderId: "",
           lastMessageAt: null,
           updatedAt: serverTimestamp(),
         });
@@ -82,6 +141,7 @@ export default function MessageList({
 
       await updateDoc(doc(db, "chatrooms", chatroomId), {
         lastMessage: previewText,
+        lastSenderId: latestMessage.senderId || "",
         lastMessageAt: latestMessage.createdAt || serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
@@ -145,16 +205,44 @@ export default function MessageList({
     }, 1800);
   }
 
+  function getUserDisplayName(uid) {
+    const user = userMap[uid];
+
+    if (uid === currentUserId) {
+      return user?.username || user?.email || "You";
+    }
+
+    if (!user) return uid;
+
+    return user.username || user.email || uid;
+  }
+
+  function getUserPhotoURL(uid) {
+    const user = userMap[uid];
+
+    if (!user) return "";
+
+    return user.photoURL || "";
+  }
   const filteredMessages = useMemo(() => {
     const keyword = searchText.trim().toLowerCase();
 
-    if (!keyword) return messages;
+    const visibleMessages = messages.filter((message) => {
+      const senderId = message.senderId;
 
-    return messages.filter((message) => {
+      if (myBlockedUsers.includes(senderId)) return false;
+      if (blockedByUsers.includes(senderId)) return false;
+
+      return true;
+    });
+
+    if (!keyword) return visibleMessages;
+
+    return visibleMessages.filter((message) => {
       if (message.unsent) return false;
       return (message.text || "").toLowerCase().includes(keyword);
     });
-  }, [messages, searchText]);
+  }, [messages, searchText, myBlockedUsers, blockedByUsers]);
 
   if (!chatroomId) {
     return <p>請先選擇聊天室</p>;
@@ -181,6 +269,7 @@ export default function MessageList({
             ref={(el) => {
               if (el) messageRefs.current[message.id] = el;
             }}
+            className="message-bubble"
             style={{
               alignSelf: isMine ? "flex-end" : "flex-start",
               maxWidth: "70%",
@@ -195,9 +284,49 @@ export default function MessageList({
               transition: "background 0.3s",
             }}
           >
-            <p style={{ margin: 0, fontSize: "12px", opacity: 0.7 }}>
-              {isMine ? "You" : message.senderId}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              marginBottom: "6px",
+            }}
+          >
+            <div
+              style={{
+                width: "28px",
+                height: "28px",
+                borderRadius: "50%",
+                background: "#bfdbfe",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                overflow: "hidden",
+                flexShrink: 0,
+                fontSize: "12px",
+                fontWeight: "bold",
+              }}
+            >
+              {getUserPhotoURL(message.senderId) ? (
+                <img
+                  src={getUserPhotoURL(message.senderId)}
+                  alt="avatar"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                  }}
+                />
+              ) : (
+                (getUserDisplayName(message.senderId) || "?").charAt(0).toUpperCase()
+              )}
+            </div>
+
+            <p style={{ margin: 0, fontSize: "12px", opacity: 0.75 }}>
+              {getUserDisplayName(message.senderId)}
+              {isMine ? " (You)" : ""}
             </p>
+          </div>
 
             {message.replyTo && (
               <div
@@ -212,7 +341,8 @@ export default function MessageList({
                 }}
               >
                 <p style={{ margin: 0, fontSize: "12px", opacity: 0.7 }}>
-                  回覆：{message.replyTo.senderId === currentUserId ? "You" : message.replyTo.senderId}
+                  回覆：{getUserDisplayName(message.replyTo.senderId)}
+                  {message.replyTo.senderId === currentUserId ? " (You)" : ""}
                 </p>
                 <p style={{ margin: "4px 0 0 0", fontSize: "14px" }}>
                   {message.replyTo.text}

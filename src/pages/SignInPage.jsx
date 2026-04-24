@@ -36,39 +36,35 @@ export default function SignInPage() {
   }
 
   return (
-    <div style={{ padding: "24px" }}>
-      <h1>Sign In</h1>
+    <div className="auth-page">
+      <div className="auth-card">
+        <h1>Sign In</h1>
 
-      <form
-        onSubmit={handleSignIn}
-        style={{ display: "grid", gap: "12px", maxWidth: "320px" }}
-      >
-        <input
-          type="email"
-          placeholder="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
+        <form onSubmit={handleSignIn} className="form-grid">
+          <input
+            type="email"
+            placeholder="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
 
-        <input
-          type="password"
-          placeholder="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+          <input
+            type="password"
+            placeholder="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
 
-        <button type="submit">Sign In</button>
-      </form>
+          <button type="submit">Sign In</button>
+        </form>
 
-      <button
-        onClick={handleGoogleSignIn}
-        style={{ marginTop: "12px" }}
-      >
-        Sign In with Google
-      </button>
+        <button onClick={handleGoogleSignIn} style={{ marginTop: "12px" }}>
+          Sign In with Google
+        </button>
 
-      {errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}
-      {successMsg && <p style={{ color: "green" }}>{successMsg}</p>}
+        {errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}
+        {successMsg && <p style={{ color: "green" }}>{successMsg}</p>}
+      </div>
     </div>
   );
 }
