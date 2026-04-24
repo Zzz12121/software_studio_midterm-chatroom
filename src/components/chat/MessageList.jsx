@@ -344,7 +344,7 @@ export default function MessageList({
                   回覆：{getUserDisplayName(message.replyTo.senderId)}
                   {message.replyTo.senderId === currentUserId ? " (You)" : ""}
                 </p>
-                <p style={{ margin: "4px 0 0 0", fontSize: "14px" }}>
+                <p className="safe-message-text" style={{ fontSize: "14px" }}>
                   {message.replyTo.text}
                 </p>
               </div>
@@ -365,9 +365,9 @@ export default function MessageList({
                 </div>
               </div>
             ) : (
-              <p style={{ margin: "6px 0 0 0", whiteSpace: "pre-wrap" }}>
-                {message.text}
-              </p>
+            <p className="safe-message-text">
+              {message.text}
+            </p>
             )}
 
             {message.edited && !message.unsent && (

@@ -233,3 +233,13 @@ select:focus {
     padding: 10px;
   }
 }
+.safe-message-text {
+  margin: 6px 0 0 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.safe-message-text code {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
