@@ -3,12 +3,18 @@ import SignInPage from "./pages/SignInPage";
 import SignUpPage from "./pages/SignUpPage";
 import ChatPage from "./pages/ChatPage";
 import ProfilePage from "./pages/ProfilePage";
+import SplashScreen from "./components/common/SplashScreen";
 import { useAuth } from "./contexts/AuthContext";
 
 export default function App() {
   const { currentUser, loading } = useAuth();
+  const [showSplash, setShowSplash] = useState(true);
   const [authPage, setAuthPage] = useState("signin");
   const [appPage, setAppPage] = useState("chat");
+
+  if (showSplash) {
+    return <SplashScreen onFinish={() => setShowSplash(false)} />;
+  }
 
   if (loading) {
     return (
