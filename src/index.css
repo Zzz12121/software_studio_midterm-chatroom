@@ -1148,3 +1148,169 @@ select:focus {
 .invite-member-form input {
   width: 100%;
 }
+/* Better message input layout: keep Send/Image/GIF always reachable */
+
+.messenger-footer {
+  flex-shrink: 0;
+  min-height: 78px;
+  max-height: 260px;
+  overflow: visible;
+  padding: 10px 22px;
+  border-top: 1px solid #e5e7eb;
+  background: rgba(255, 255, 255, 0.98);
+  z-index: 30;
+}
+
+.message-input-root {
+  width: 100%;
+  display: grid;
+  grid-template-rows: minmax(0, auto) auto;
+  gap: 8px;
+  max-height: 240px;
+  overflow: hidden;
+}
+
+.message-input-preview-area {
+  max-height: 130px;
+  overflow-y: auto;
+  display: grid;
+  gap: 8px;
+}
+
+.message-input-preview-card {
+  padding: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.message-input-image-preview {
+  max-width: 180px;
+  max-height: 100px;
+  border-radius: 8px;
+  display: block;
+  object-fit: cover;
+}
+
+.message-input-status {
+  margin: 0;
+  font-size: 12px;
+  color: #2563eb;
+}
+
+.message-input-controls {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  align-items: end;
+  gap: 10px;
+  width: 100%;
+}
+
+.message-textarea {
+  width: 100%;
+  min-height: 42px;
+  max-height: 96px;
+  resize: vertical;
+  overflow-y: auto;
+  line-height: 1.4;
+}
+
+.image-upload-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 42px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #10b981;
+  color: white;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.send-button {
+  height: 42px;
+  white-space: nowrap;
+}
+
+/* Make the chatroom list area longer */
+
+.messenger-sidebar {
+  grid-template-rows: auto auto minmax(0, 1fr);
+}
+
+.sidebar-section {
+  min-height: 0;
+}
+
+.sidebar-section.grow {
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.panel-card {
+  padding: 10px;
+}
+
+.panel-card h2 {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+}
+
+.panel-card .form-grid {
+  gap: 8px;
+}
+
+/* Keep floating popups above chat UI */
+
+.user-dropdown,
+.chatroom-dropdown,
+.gif-picker-panel {
+  z-index: 9999;
+}
+
+/* GIPHY panel should not be clipped by footer */
+
+.gif-picker-panel {
+  position: fixed;
+  right: 24px;
+  bottom: 96px;
+  width: 360px;
+  max-height: min(460px, calc(100dvh - 140px));
+  overflow-y: auto;
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  box-shadow: 0 20px 48px rgba(15, 23, 42, 0.28);
+}
+
+@media (max-width: 620px) {
+  .messenger-footer {
+    max-height: 300px;
+    padding: 10px;
+  }
+
+  .message-input-root {
+    max-height: 280px;
+  }
+
+  .message-input-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .message-textarea,
+  .image-upload-button,
+  .send-button,
+  .gif-picker-wrapper > button {
+    width: 100%;
+  }
+
+  .gif-picker-panel {
+    left: 12px;
+    right: 12px;
+    bottom: 120px;
+    width: auto;
+    max-height: min(380px, calc(100dvh - 150px));
+  }
+}

@@ -21,10 +21,10 @@ export default function MessageInput({
   const [selectedImageName, setSelectedImageName] = useState("");
 
   useEffect(() => {
-  setText("");
-  setMsg("");
-  clearSelectedImage();
-}, [chatroomId]);
+    setText("");
+    setMsg("");
+    clearSelectedImage();
+  }, [chatroomId]);
 
   function handleImageChange(e) {
     const file = e.target.files[0];
@@ -37,7 +37,6 @@ export default function MessageInput({
       return;
     }
 
-    // Firestore 單一 document 有大小限制，所以先限制圖片大小
     if (file.size > 700 * 1024) {
       setMsg("圖片太大，請選擇 700KB 以下的圖片");
       return;
@@ -61,6 +60,7 @@ export default function MessageInput({
     setSelectedImage(null);
     setSelectedImageName("");
   }
+
   async function handleSendGif(gif) {
     setMsg("");
 
@@ -102,7 +102,7 @@ export default function MessageInput({
       });
 
       setText("");
-      clearSelectedImage?.();
+      clearSelectedImage();
       clearReplyTarget?.();
       setMsg("GIF 已送出");
     } catch (error) {
@@ -110,6 +110,7 @@ export default function MessageInput({
       setMsg("GIF 送出失敗");
     }
   }
+
   async function handleSendMessage(e) {
     e.preventDefault();
 
@@ -166,103 +167,73 @@ export default function MessageInput({
   }
 
   return (
-    <div>
-      {replyTarget && (
-        <div
-          style={{
-            marginBottom: "12px",
-            padding: "10px",
-            border: "1px solid #ccc",
-            borderRadius: "8px",
-            background: "#f8fafc",
-          }}
-        >
-          <p style={{ margin: 0, fontSize: "12px", opacity: 0.7 }}>
-            正在回覆：
-            {replyTarget.senderId === currentUserId
-              ? "You"
-              : replyTarget.senderId}
-          </p>
+    <div className="message-input-root">
+      <div className="message-input-preview-area">
+        {replyTarget && (
+          <div className="message-input-preview-card">
+            <p style={{ margin: 0, fontSize: "12px", opacity: 0.7 }}>
+              正在回覆：
+              {replyTarget.senderId === currentUserId
+                ? "You"
+                : replyTarget.senderId}
+            </p>
 
-          <p style={{ margin: "6px 0 0 0" }}>
-          {replyTarget.unsent
-            ? "此訊息已收回"
-            : replyTarget.type === "image"
-            ? "[圖片]"
-            : replyTarget.type === "gif"
-            ? "[GIF]"
-            : replyTarget.text}
-          </p>
+            <p style={{ margin: "6px 0 0 0" }}>
+              {replyTarget.unsent
+                ? "此訊息已收回"
+                : replyTarget.type === "image"
+                ? "[圖片]"
+                : replyTarget.type === "gif"
+                ? "[GIF]"
+                : replyTarget.text}
+            </p>
 
-          <button
-            type="button"
-            onClick={clearReplyTarget}
-            style={{ marginTop: "8px" }}
-          >
-            取消回覆
-          </button>
-        </div>
-      )}
+            <button
+              type="button"
+              onClick={clearReplyTarget}
+              style={{ marginTop: "8px" }}
+            >
+              取消回覆
+            </button>
+          </div>
+        )}
 
-      {selectedImage && (
-        <div
-          style={{
-            marginBottom: "12px",
-            padding: "10px",
-            border: "1px solid #d1d5db",
-            borderRadius: "8px",
-            background: "#ffffff",
-          }}
-        >
-          <p style={{ margin: "0 0 8px 0", fontSize: "12px" }}>
-            已選擇圖片：{selectedImageName}
-          </p>
+        {selectedImage && (
+          <div className="message-input-preview-card">
+            <p style={{ margin: "0 0 8px 0", fontSize: "12px" }}>
+              已選擇圖片：{selectedImageName}
+            </p>
 
-          <img
-            src={selectedImage}
-            alt="preview"
-            style={{
-              maxWidth: "180px",
-              maxHeight: "120px",
-              borderRadius: "8px",
-              display: "block",
-              objectFit: "cover",
-            }}
-          />
+            <img
+              src={selectedImage}
+              alt="preview"
+              className="message-input-image-preview"
+            />
 
-          <button
-            type="button"
-            onClick={clearSelectedImage}
-            style={{ marginTop: "8px" }}
-          >
-            取消圖片
-          </button>
-        </div>
-      )}
+            <button
+              type="button"
+              onClick={clearSelectedImage}
+              style={{ marginTop: "8px" }}
+            >
+              取消圖片
+            </button>
+          </div>
+        )}
 
-      <form onSubmit={handleSendMessage} style={{ display: "flex", gap: "12px" }}>
-        <input
-          type="text"
+        {msg && <p className="message-input-status">{msg}</p>}
+      </div>
+
+      <form onSubmit={handleSendMessage} className="message-input-controls">
+        <textarea
           placeholder="輸入訊息..."
           value={text}
           onChange={(e) => setText(e.target.value)}
-          style={{ flex: 1 }}
           disabled={!!selectedImage}
+          className="message-textarea"
+          rows={1}
         />
 
-        <label
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "8px 12px",
-            borderRadius: "8px",
-            background: "#10b981",
-            color: "white",
-            cursor: "pointer",
-            whiteSpace: "nowrap",
-          }}
-        >
+        <label className="image-upload-button">
           Image
           <input
             type="file"
@@ -271,14 +242,13 @@ export default function MessageInput({
             style={{ display: "none" }}
           />
         </label>
-        <GifPicker
-          onSelectGif={handleSendGif}
-          resetKey={chatroomId}
-        />    
-        <button type="submit">Send</button>
-      </form>
 
-      {msg && <p>{msg}</p>}
+        <GifPicker onSelectGif={handleSendGif} resetKey={chatroomId} />
+
+        <button type="submit" className="send-button">
+          Send
+        </button>
+      </form>
     </div>
   );
 }

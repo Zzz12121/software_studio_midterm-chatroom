@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   arrayRemove,
   doc,
@@ -16,6 +16,24 @@ export default function ChatroomMenu({ chatroom, currentUserId }) {
   const [userMap, setUserMap] = useState({});
   const [editName, setEditName] = useState("");
   const [editPhotoURL, setEditPhotoURL] = useState("");
+
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (!open) return;
+
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [open]);
 
   useEffect(() => {
     async function fetchMembers() {
@@ -52,13 +70,14 @@ export default function ChatroomMenu({ chatroom, currentUserId }) {
 
     setEditName(chatroom.name || "");
     setEditPhotoURL(chatroom.photoURL || "");
+    setMsg("");
   }, [chatroom]);
 
   if (!chatroom) {
     return (
       <div className="chat-header-button placeholder">
         <div className="chat-title-avatar">?</div>
-        <div>
+        <div className="chat-title-text">
           <h2>Select a chatroom</h2>
           <p>Choose a room from the left sidebar</p>
         </div>
@@ -141,7 +160,7 @@ export default function ChatroomMenu({ chatroom, currentUserId }) {
   }
 
   return (
-    <div className="chatroom-menu-wrapper">
+    <div className="chatroom-menu-wrapper" ref={menuRef}>
       <button
         type="button"
         className="chat-header-button"
@@ -181,8 +200,8 @@ export default function ChatroomMenu({ chatroom, currentUserId }) {
               <div>
                 <strong>{display.name}</strong>
                 <p>
-                  {chatroom.type || "chatroom"} · {chatroom.members?.length || 0}{" "}
-                  members
+                  {chatroom.type || "chatroom"} ·{" "}
+                  {chatroom.members?.length || 0} members
                 </p>
               </div>
             </div>

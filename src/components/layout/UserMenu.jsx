@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function UserMenu({
   currentUser,
@@ -7,6 +7,7 @@ export default function UserMenu({
   onLogout,
 }) {
   const [open, setOpen] = useState(false);
+  const menuRef = useRef(null);
 
   const displayName =
     userProfile?.username ||
@@ -16,8 +17,24 @@ export default function UserMenu({
 
   const photoURL = userProfile?.photoURL || "";
 
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (!open) return;
+
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [open]);
+
   return (
-    <div className="user-menu-wrapper">
+    <div className="user-menu-wrapper" ref={menuRef}>
       <button
         type="button"
         className="user-profile-button"
@@ -71,7 +88,10 @@ export default function UserMenu({
             <button
               type="button"
               className="dropdown-action danger"
-              onClick={onLogout}
+              onClick={() => {
+                setOpen(false);
+                onLogout?.();
+              }}
             >
               🚪 Logout
             </button>

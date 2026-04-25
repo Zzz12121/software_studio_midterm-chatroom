@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const GIPHY_API_KEY = import.meta.env.VITE_GIPHY_API_KEY;
 
@@ -8,6 +8,20 @@ export default function GifPicker({ onSelectGif, resetKey }) {
   const [gifs, setGifs] = useState([]);
   const [msg, setMsg] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const pickerRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (!open) return;
+      if (pickerRef.current && !pickerRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [open]);
 
   useEffect(() => {
     setOpen(false);
@@ -110,7 +124,7 @@ export default function GifPicker({ onSelectGif, resetKey }) {
   }
 
   return (
-    <div className="gif-picker-wrapper">
+    <div className="gif-picker-wrapper" ref={pickerRef}>
       <button
         type="button"
         onClick={(e) => {
@@ -123,10 +137,7 @@ export default function GifPicker({ onSelectGif, resetKey }) {
       </button>
 
       {open && (
-        <div
-          className="gif-picker-panel"
-          onClick={(e) => e.stopPropagation()}
-        >
+        <div className="gif-picker-panel">
           <div className="gif-search-form">
             <input
               type="text"
