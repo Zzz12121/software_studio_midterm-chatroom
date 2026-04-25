@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import GifPicker from "./GifPicker";
 import {
   collection,
   addDoc,
@@ -18,6 +19,12 @@ export default function MessageInput({
   const [msg, setMsg] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
   const [selectedImageName, setSelectedImageName] = useState("");
+
+  useEffect(() => {
+  setText("");
+  setMsg("");
+  clearSelectedImage();
+}, [chatroomId]);
 
   function handleImageChange(e) {
     const file = e.target.files[0];
@@ -54,7 +61,55 @@ export default function MessageInput({
     setSelectedImage(null);
     setSelectedImageName("");
   }
+  async function handleSendGif(gif) {
+    setMsg("");
 
+    try {
+      await addDoc(collection(db, "chatrooms", chatroomId, "messages"), {
+        senderId: currentUserId,
+        text: "",
+        type: "gif",
+        imageURL: "",
+        imageName: "",
+        gifURL: gif.gifURL,
+        gifTitle: gif.title || "GIPHY GIF",
+        giphyURL: gif.giphyURL || "",
+        unsent: false,
+        edited: false,
+        replyTo: replyTarget
+          ? {
+              messageId: replyTarget.id,
+              senderId: replyTarget.senderId,
+              text: replyTarget.unsent
+                ? "此訊息已收回"
+                : replyTarget.type === "image"
+                ? "[圖片]"
+                : replyTarget.type === "gif"
+                ? "[GIF]"
+                : replyTarget.text || "",
+            }
+          : null,
+        reactions: {},
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+
+      await updateDoc(doc(db, "chatrooms", chatroomId), {
+        lastMessage: "[GIF]",
+        lastSenderId: currentUserId,
+        lastMessageAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+
+      setText("");
+      clearSelectedImage?.();
+      clearReplyTarget?.();
+      setMsg("GIF 已送出");
+    } catch (error) {
+      console.error("Send GIF error:", error);
+      setMsg("GIF 送出失敗");
+    }
+  }
   async function handleSendMessage(e) {
     e.preventDefault();
 
@@ -212,7 +267,10 @@ export default function MessageInput({
             style={{ display: "none" }}
           />
         </label>
-
+        <GifPicker
+          onSelectGif={handleSendGif}
+          resetKey={chatroomId}
+        />    
         <button type="submit">Send</button>
       </form>
 

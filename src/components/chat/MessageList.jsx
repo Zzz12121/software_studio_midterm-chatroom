@@ -133,6 +133,8 @@ export default function MessageList({
         previewText = "此訊息已收回";
       } else if (latestMessage.type === "image") {
         previewText = "[圖片]";
+      } else if (latestMessage.type === "gif") {
+        previewText = "[GIF]";
       } else if (latestMessage.type === "sticker") {
         previewText = "[貼圖]";
       } else {
@@ -156,6 +158,9 @@ export default function MessageList({
         text: "",
         imageURL: "",
         imageName: "",
+        gifURL: "",
+        gifTitle: "",
+        giphyURL: "",
         unsent: true,
         updatedAt: serverTimestamp(),
       });
@@ -387,6 +392,24 @@ export default function MessageList({
                   </p>
                 )}
               </div>
+            ) : message.type === "gif" ? (
+              <div style={{ marginTop: "8px" }}>
+                <img
+                  src={message.gifURL}
+                  alt={message.gifTitle || "GIPHY GIF"}
+                  style={{
+                    maxWidth: "260px",
+                    maxHeight: "260px",
+                    borderRadius: "10px",
+                    objectFit: "cover",
+                    display: "block",
+                  }}
+                />
+
+                <p style={{ margin: "6px 0 0 0", fontSize: "12px", opacity: 0.7 }}>
+                  GIF via GIPHY
+                </p>
+              </div>
             ) : (
               <p className="safe-message-text">
                 {message.text}
@@ -401,7 +424,7 @@ export default function MessageList({
 
             {!message.unsent && !isEditing && (
               <div className={`message-actions ${isMine ? "mine" : "others"}`}>
-                {isMine && message.type !== "image" && (
+                {isMine && message.type !== "image" && message.type !== "gif" && (
                   <button
                     type="button"
                     className="message-action-button"
