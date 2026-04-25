@@ -1314,3 +1314,252 @@ select:focus {
     max-height: min(380px, calc(100dvh - 150px));
   }
 }
+/* Final UI refinement: longer chatroom list + better message input */
+
+/* Make left chatroom list taller */
+.messenger-sidebar {
+  grid-template-rows: auto auto minmax(0, 1fr);
+  gap: 10px;
+  padding: 14px;
+}
+
+.user-profile-button {
+  padding: 10px;
+  border-radius: 18px;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+}
+
+.user-meta strong {
+  font-size: 15px;
+}
+
+.user-meta span {
+  font-size: 11px;
+}
+
+.panel-card {
+  padding: 10px;
+  border-radius: 16px;
+}
+
+.panel-card h2 {
+  margin: 0 0 8px 0;
+  font-size: 15px;
+}
+
+.panel-card .form-grid {
+  gap: 7px;
+}
+
+.panel-card input,
+.panel-card select {
+  padding: 7px 9px;
+  font-size: 13px;
+}
+
+.panel-card button {
+  padding: 7px 10px;
+  font-size: 13px;
+}
+
+.sidebar-section.grow {
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.sidebar-section.grow h3 {
+  margin: 8px 0 10px 0;
+  font-size: 15px;
+}
+
+.chatroom-card {
+  padding: 10px;
+  margin-bottom: 8px;
+}
+
+.chatroom-card-content {
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 10px;
+}
+
+.chatroom-list-avatar {
+  width: 40px;
+  height: 40px;
+}
+
+.chatroom-list-text p:first-child {
+  font-size: 14px;
+}
+
+.chatroom-list-text p:last-child {
+  font-size: 12px;
+}
+
+/* Better message input */
+.messenger-footer {
+  min-height: 76px;
+  max-height: 300px;
+  overflow: visible;
+  padding: 12px 22px;
+  background: rgba(255, 255, 255, 0.98);
+}
+
+.message-input-root {
+  width: 100%;
+  display: grid;
+  grid-template-rows: minmax(0, auto) auto;
+  gap: 8px;
+  max-height: 280px;
+  overflow: hidden;
+}
+
+.message-input-preview-area {
+  max-height: 145px;
+  overflow-y: auto;
+  display: grid;
+  gap: 8px;
+}
+
+.message-input-controls {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  align-items: end;
+  gap: 10px;
+  width: 100%;
+}
+
+.message-textarea {
+  width: 100%;
+  min-height: 44px;
+  max-height: 120px;
+  height: 44px;
+  resize: none;
+  overflow-y: auto;
+
+  border: 1px solid #dbe3ef;
+  border-radius: 999px;
+  padding: 11px 18px;
+
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  font-size: 15px;
+  line-height: 1.45;
+  color: #111827;
+  background: #f8fafc;
+
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease;
+}
+
+.message-textarea::placeholder {
+  color: #94a3b8;
+}
+
+.message-textarea:focus {
+  outline: none;
+  border-color: #60a5fa;
+  background: #ffffff;
+  box-shadow:
+    0 0 0 3px rgba(96, 165, 250, 0.18),
+    inset 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+/* When text grows taller, rounded rectangle looks better than full pill */
+.message-textarea:focus,
+.message-textarea:not(:placeholder-shown) {
+  border-radius: 22px;
+}
+
+.image-upload-button,
+.gif-picker-wrapper > button,
+.send-button {
+  height: 44px;
+  border-radius: 999px;
+  padding: 0 16px;
+  white-space: nowrap;
+}
+
+.image-upload-button {
+  background: #10b981;
+}
+
+.gif-picker-wrapper > button {
+  background: #6366f1;
+}
+
+.send-button {
+  background: #2563eb;
+  font-weight: 700;
+}
+
+/* Keep buttons aligned even when textarea grows */
+.image-upload-button,
+.gif-picker-wrapper,
+.send-button {
+  align-self: end;
+}
+
+/* Mobile */
+@media (max-width: 620px) {
+  .messenger-sidebar {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .panel-card {
+    padding: 8px;
+  }
+
+  .panel-card h2 {
+    font-size: 13px;
+  }
+
+  .panel-card input,
+  .panel-card select,
+  .panel-card button {
+    font-size: 12px;
+    padding: 6px 7px;
+  }
+
+  .chatroom-card {
+    padding: 8px;
+  }
+
+  .chatroom-card-content {
+    grid-template-columns: 34px minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .chatroom-list-avatar {
+    width: 34px;
+    height: 34px;
+  }
+
+  .message-input-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .message-textarea {
+    border-radius: 20px;
+  }
+
+  .image-upload-button,
+  .gif-picker-wrapper > button,
+  .send-button {
+    width: 100%;
+  }
+}

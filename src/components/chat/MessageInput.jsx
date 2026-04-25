@@ -224,14 +224,19 @@ export default function MessageInput({
       </div>
 
       <form onSubmit={handleSendMessage} className="message-input-controls">
-        <textarea
-          placeholder="輸入訊息..."
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          disabled={!!selectedImage}
-          className="message-textarea"
-          rows={1}
-        />
+      <textarea
+        placeholder="輸入訊息..."
+        value={text}
+        onChange={(e) => {
+          setText(e.target.value);
+
+          e.target.style.height = "auto";
+          e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
+        }}
+        disabled={!!selectedImage}
+        className="message-textarea"
+        rows={1}
+      />
 
         <label className="image-upload-button">
           Image
