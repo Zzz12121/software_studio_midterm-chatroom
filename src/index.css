@@ -1087,3 +1087,64 @@ select:focus {
     flex-direction: column;
   }
 }
+/* Chatroom avatar in sidebar */
+
+.chatroom-card-content {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding-right: 34px;
+}
+
+.chatroom-list-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 999px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #dbeafe, #93c5fd);
+  color: #1e3a8a;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.chatroom-list-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.chatroom-list-text {
+  min-width: 0;
+}
+
+.chatroom-list-text p {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Chatroom header avatar image */
+
+.chat-title-avatar {
+  overflow: hidden;
+}
+
+.chat-title-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Invite member form */
+
+.invite-member-form {
+  display: grid;
+  gap: 8px;
+}
+
+.invite-member-form input {
+  width: 100%;
+}

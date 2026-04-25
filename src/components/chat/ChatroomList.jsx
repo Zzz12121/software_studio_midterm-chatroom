@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import {
   collection,
+  doc,
+  getDoc,
   onSnapshot,
   orderBy,
   query,
@@ -13,6 +15,7 @@ export default function ChatroomList({
   onSelectChatroom,
 }) {
   const [chatrooms, setChatrooms] = useState([]);
+  const [userMap, setUserMap] = useState({});
 
   const lastSeenMapRef = useRef({});
   const notifiedMapRef = useRef({});
@@ -45,10 +48,43 @@ export default function ChatroomList({
     }
   }, [selectedChatroomId]);
 
+  async function fetchUsersForRooms(rooms) {
+    const uidSet = new Set();
+
+    rooms.forEach((room) => {
+      if (Array.isArray(room.members)) {
+        room.members.forEach((uid) => uidSet.add(uid));
+      }
+    });
+
+    const result = {};
+
+    for (const uid of uidSet) {
+      try {
+        const userSnap = await getDoc(doc(db, "users", uid));
+
+        if (userSnap.exists()) {
+          const data = userSnap.data();
+
+          result[uid] = {
+            uid,
+            username: data.username || "",
+            email: data.email || "",
+            photoURL: data.photoURL || "",
+          };
+        }
+      } catch (error) {
+        console.error("Fetch chatroom user error:", error);
+      }
+    }
+
+    setUserMap(result);
+  }
+
   useEffect(() => {
     const q = query(collection(db, "chatrooms"), orderBy("updatedAt", "desc"));
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    const unsubscribe = onSnapshot(q, async (snapshot) => {
       const currentSelectedId = selectedChatroomIdRef.current;
 
       const rooms = snapshot.docs
@@ -60,6 +96,8 @@ export default function ChatroomList({
           (room) =>
             Array.isArray(room.members) && room.members.includes(currentUserId)
         );
+
+      await fetchUsersForRooms(rooms);
 
       if (!initializedRef.current) {
         rooms.forEach((room) => {
@@ -106,7 +144,9 @@ export default function ChatroomList({
           typeof Notification !== "undefined" &&
           Notification.permission === "granted"
         ) {
-          new Notification(room.name || "聊天室", {
+          const display = getRoomDisplay(room);
+
+          new Notification(display.name || "聊天室", {
             body: room.lastMessage || "你有未讀訊息",
           });
 
@@ -124,6 +164,32 @@ export default function ChatroomList({
 
     return () => unsubscribe();
   }, [currentUserId]);
+
+  function getRoomDisplay(room) {
+    if (room.type === "direct") {
+      const otherUid = room.members?.find((uid) => uid !== currentUserId);
+      const otherUser = userMap[otherUid];
+
+      return {
+        name:
+          otherUser?.username ||
+          otherUser?.email ||
+          room.name ||
+          "私聊聊天室",
+        photoURL: otherUser?.photoURL || "",
+        fallback:
+          otherUser?.username?.charAt(0) ||
+          otherUser?.email?.charAt(0) ||
+          "D",
+      };
+    }
+
+    return {
+      name: room.name || "未命名群組",
+      photoURL: room.photoURL || "",
+      fallback: (room.name || "G").charAt(0),
+    };
+  }
 
   function handleClickRoom(room) {
     const ts = room.lastMessageAt?.toMillis?.() || Date.now();
@@ -152,33 +218,49 @@ export default function ChatroomList({
       {chatrooms.length === 0 ? (
         <p>目前沒有聊天室</p>
       ) : (
-        chatrooms.map((room) => (
-          <div
-            key={room.id}
-            onClick={() => handleClickRoom(room)}
-            className={`chatroom-card ${selectedChatroomId === room.id ? "active" : ""}`}
-          >
-            <p style={{ margin: 0, fontWeight: "bold" }}>
-              {room.name || "未命名聊天室"}
-            </p>
+        chatrooms.map((room) => {
+          const display = getRoomDisplay(room);
 
-            <p
-              style={{
-                margin: "6px 0 0 0",
-                fontSize: "12px",
-                opacity: 0.8,
-              }}
+          return (
+            <div
+              key={room.id}
+              onClick={() => handleClickRoom(room)}
+              className={`chatroom-card ${
+                selectedChatroomId === room.id ? "active" : ""
+              }`}
             >
-              {room.lastMessage || room.type}
-            </p>
+              <div className="chatroom-card-content">
+                <div className="chatroom-list-avatar">
+                  {display.photoURL ? (
+                    <img src={display.photoURL} alt="chatroom avatar" />
+                  ) : (
+                    <span>{display.fallback.toUpperCase()}</span>
+                  )}
+                </div>
 
-            {room.unread > 0 && (
-              <span className="unread-badge">
-                {room.unread}
-              </span>
-            )}
-          </div>
-        ))
+                <div className="chatroom-list-text">
+                  <p style={{ margin: 0, fontWeight: "bold" }}>
+                    {display.name}
+                  </p>
+
+                  <p
+                    style={{
+                      margin: "6px 0 0 0",
+                      fontSize: "12px",
+                      opacity: 0.8,
+                    }}
+                  >
+                    {room.lastMessage || room.type}
+                  </p>
+                </div>
+              </div>
+
+              {room.unread > 0 && (
+                <span className="unread-badge">{room.unread}</span>
+              )}
+            </div>
+          );
+        })
       )}
     </div>
   );
