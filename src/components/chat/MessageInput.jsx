@@ -138,6 +138,8 @@ export default function MessageInput({
                 ? "此訊息已收回"
                 : replyTarget.type === "image"
                 ? "[圖片]"
+                : replyTarget.type === "gif"
+                ? "[GIF]"
                 : replyTarget.text || "",
             }
           : null,
@@ -183,11 +185,13 @@ export default function MessageInput({
           </p>
 
           <p style={{ margin: "6px 0 0 0" }}>
-            {replyTarget.unsent
-              ? "此訊息已收回"
-              : replyTarget.type === "image"
-              ? "[圖片]"
-              : replyTarget.text}
+          {replyTarget.unsent
+            ? "此訊息已收回"
+            : replyTarget.type === "image"
+            ? "[圖片]"
+            : replyTarget.type === "gif"
+            ? "[GIF]"
+            : replyTarget.text}
           </p>
 
           <button

@@ -27,6 +27,7 @@ export default function MessageList({
   const [highlightedMessageId, setHighlightedMessageId] = useState("");
   const [userMap, setUserMap] = useState({});
   const messageRefs = useRef({});
+  const bottomRef = useRef(null);
 
   useEffect(() => {
     if (!chatroomId) {
@@ -231,6 +232,16 @@ export default function MessageList({
 
     return user.photoURL || "";
   }
+
+  function scrollToBottom() {
+    requestAnimationFrame(() => {
+      bottomRef.current?.scrollIntoView({
+        behavior: "auto",
+        block: "end",
+      });
+    });
+  }
+
   const filteredMessages = useMemo(() => {
     const keyword = searchText.trim().toLowerCase();
 
@@ -250,6 +261,13 @@ export default function MessageList({
       return (message.text || "").toLowerCase().includes(keyword);
     });
   }, [messages, searchText, myBlockedUsers, blockedByUsers]);
+
+  useEffect(() => {
+    if (!chatroomId) return;
+    if (filteredMessages.length === 0) return;
+
+    scrollToBottom();
+  }, [chatroomId, filteredMessages.length]);
 
   if (!chatroomId) {
     return <p>請先選擇聊天室</p>;
@@ -459,6 +477,7 @@ export default function MessageList({
           </div>
         );
       })}
+      <div ref={bottomRef} />
     </div>
   );
 }
