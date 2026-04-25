@@ -3,7 +3,8 @@
 ## 專案需求 Checklist
 
 本 README 先整理簡報中的 **所有需求項目**，並依照大項分類，附上各項分數，方便後續逐項完成與檢查。
-
+要加這個在.env
+VITE_GIPHY_API_KEY=WwvcJWjuidOln7uvc3iDZnuxoNWNZfFU
 ---
 
 ## 1. Basic Components（50%）

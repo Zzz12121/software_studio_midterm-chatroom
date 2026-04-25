@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
-import { doc, getDoc, onSnapshot } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  onSnapshot,
+  setDoc,
+  serverTimestamp,
+} from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import { useAuth } from "../contexts/AuthContext";
 import CreateChatroomModal from "../components/chat/CreateChatroomModal";
@@ -25,25 +31,77 @@ export default function ChatPage({ onGoProfile }) {
     async function fetchMyProfile() {
       if (!currentUser) return;
 
-      const snap = await getDoc(doc(db, "users", currentUser.uid));
+      const userRef = doc(db, "users", currentUser.uid);
+      const snap = await getDoc(userRef);
+
+      const authDisplayName =
+        currentUser.displayName ||
+        currentUser.email?.split("@")[0] ||
+        "User";
+
+      const authPhotoURL = currentUser.photoURL || "";
+      const authEmail = currentUser.email || "";
 
       if (snap.exists()) {
         const data = snap.data();
 
-        setUserProfile({
-          username: data.username || "",
-          email: data.email || currentUser.email || "",
-          photoURL: data.photoURL || "",
-        });
+        const oldUsername = data.username || "";
+        const emailPrefix = authEmail.split("@")[0];
 
+        const shouldUseAuthName =
+          !oldUsername ||
+          oldUsername === authEmail ||
+          oldUsername === emailPrefix;
+
+        const finalProfile = {
+          username: shouldUseAuthName ? authDisplayName : oldUsername,
+          email: data.email || authEmail,
+          photoURL: data.photoURL || authPhotoURL,
+        };
+
+        setUserProfile(finalProfile);
         setMyBlockedUsers(data.blockedUsers || []);
-      } else {
-        setUserProfile({
-          username: "",
-          email: currentUser.email || "",
-          photoURL: "",
-        });
+
+        if (shouldUseAuthName || !data.photoURL) {
+          await setDoc(
+            userRef,
+            {
+              uid: currentUser.uid,
+              email: finalProfile.email,
+              username: finalProfile.username,
+              photoURL: finalProfile.photoURL,
+              phone: data.phone || "",
+              address: data.address || "",
+              blockedUsers: data.blockedUsers || [],
+              updatedAt: serverTimestamp(),
+            },
+            { merge: true }
+          );
+        }
+
+        return;
       }
+
+      const newProfile = {
+        username: authDisplayName,
+        email: authEmail,
+        photoURL: authPhotoURL,
+      };
+
+      await setDoc(userRef, {
+        uid: currentUser.uid,
+        email: authEmail,
+        username: authDisplayName,
+        phone: "",
+        address: "",
+        photoURL: authPhotoURL,
+        blockedUsers: [],
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+
+      setUserProfile(newProfile);
+      setMyBlockedUsers([]);
     }
 
     fetchMyProfile();
