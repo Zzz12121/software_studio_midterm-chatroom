@@ -1,106 +1,203 @@
 import { useEffect, useState } from "react";
 import {
+  arrayRemove,
+  arrayUnion,
+  collection,
   doc,
   getDoc,
-  updateDoc,
-  serverTimestamp,
-  collection,
   getDocs,
   query,
+  serverTimestamp,
+  updateDoc,
   where,
-  arrayUnion,
-  arrayRemove,
 } from "firebase/firestore";
-import { db } from "../firebase/firebase";
+import { updateEmail, updateProfile } from "firebase/auth";
+import { auth, db } from "../firebase/firebase";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function ProfilePage() {
   const { currentUser } = useAuth();
 
-  const [form, setForm] = useState({
-    username: "",
-    email: "",
-    phone: "",
-    address: "",
-    photoURL: "",
-  });
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [photoURL, setPhotoURL] = useState("");
 
   const [blockedUsers, setBlockedUsers] = useState([]);
+  const [blockedProfiles, setBlockedProfiles] = useState([]);
   const [blockEmail, setBlockEmail] = useState("");
+
+  const [previewError, setPreviewError] = useState(false);
   const [msg, setMsg] = useState("");
+  const [blockMsg, setBlockMsg] = useState("");
 
   useEffect(() => {
     async function fetchProfile() {
       if (!currentUser) return;
 
-      const ref = doc(db, "users", currentUser.uid);
-      const snap = await getDoc(ref);
+      try {
+        const userRef = doc(db, "users", currentUser.uid);
+        const userSnap = await getDoc(userRef);
 
-      if (snap.exists()) {
-        const data = snap.data();
-        setForm({
-          username: data.username || "",
-          email: data.email || currentUser.email || "",
-          phone: data.phone || "",
-          address: data.address || "",
-          photoURL: data.photoURL || "",
-        });
-        setBlockedUsers(data.blockedUsers || []);
+        if (userSnap.exists()) {
+          const data = userSnap.data();
+
+          setUsername(data.username || "");
+          setEmail(data.email || currentUser.email || "");
+          setPhone(data.phone || "");
+          setAddress(data.address || "");
+          setPhotoURL(data.photoURL || currentUser.photoURL || "");
+          setBlockedUsers(data.blockedUsers || []);
+        } else {
+          setUsername(currentUser.displayName || "");
+          setEmail(currentUser.email || "");
+          setPhone("");
+          setAddress("");
+          setPhotoURL(currentUser.photoURL || "");
+          setBlockedUsers([]);
+        }
+      } catch (error) {
+        console.error("Fetch profile error:", error);
+        setMsg("讀取個人資料失敗");
       }
     }
 
     fetchProfile();
   }, [currentUser]);
 
-  function handleChange(e) {
-    const { name, value } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  }
+  useEffect(() => {
+    setPreviewError(false);
+  }, [photoURL]);
 
-  async function handleSave(e) {
-    e.preventDefault();
-    setMsg("");
-
-    try {
-      await updateDoc(doc(db, "users", currentUser.uid), {
-        username: form.username,
-        email: form.email,
-        phone: form.phone,
-        address: form.address,
-        photoURL: form.photoURL,
-        updatedAt: serverTimestamp(),
-      });
-
-      setMsg("個人資料已儲存");
-    } catch (error) {
-      console.error(error);
-      setMsg("儲存失敗");
-    }
-  }
-
-  async function handleBlockByEmail(e) {
-    e.preventDefault();
-    setMsg("");
-
-    const email = blockEmail.trim().toLowerCase();
-    if (!email) return;
-
-    try {
-      const q = query(collection(db, "users"), where("email", "==", email));
-      const snapshot = await getDocs(q);
-
-      if (snapshot.empty) {
-        setMsg("找不到這個 email");
+  useEffect(() => {
+    async function fetchBlockedProfiles() {
+      if (!blockedUsers.length) {
+        setBlockedProfiles([]);
         return;
       }
 
-      const targetUser = snapshot.docs[0].data();
+      try {
+        const profiles = [];
+
+        for (const uid of blockedUsers) {
+          const userSnap = await getDoc(doc(db, "users", uid));
+
+          if (userSnap.exists()) {
+            const data = userSnap.data();
+
+            profiles.push({
+              uid,
+              username: data.username || "",
+              email: data.email || "",
+              photoURL: data.photoURL || "",
+            });
+          } else {
+            profiles.push({
+              uid,
+              username: "",
+              email: uid,
+              photoURL: "",
+            });
+          }
+        }
+
+        setBlockedProfiles(profiles);
+      } catch (error) {
+        console.error("Fetch blocked profiles error:", error);
+      }
+    }
+
+    fetchBlockedProfiles();
+  }, [blockedUsers]);
+
+  async function handleSaveProfile(e) {
+    e.preventDefault();
+    setMsg("");
+
+    if (!currentUser) return;
+
+    try {
+      const cleanUsername = username.trim();
+      const cleanEmail = email.trim();
+      const cleanPhone = phone.trim();
+      const cleanAddress = address.trim();
+      const cleanPhotoURL = photoURL.trim();
+
+      if (!cleanUsername) {
+        setMsg("Username 不可以是空的");
+        return;
+      }
+
+      if (!cleanEmail) {
+        setMsg("Email 不可以是空的");
+        return;
+      }
+
+      if (cleanEmail !== currentUser.email) {
+        await updateEmail(auth.currentUser, cleanEmail);
+      }
+
+      await updateProfile(auth.currentUser, {
+        displayName: cleanUsername,
+        photoURL: cleanPhotoURL,
+      });
+
+      await updateDoc(doc(db, "users", currentUser.uid), {
+        uid: currentUser.uid,
+        username: cleanUsername,
+        email: cleanEmail,
+        phone: cleanPhone,
+        address: cleanAddress,
+        photoURL: cleanPhotoURL,
+        updatedAt: serverTimestamp(),
+      });
+
+      setMsg("Profile 已更新");
+    } catch (error) {
+      console.error("Update profile error:", error);
+      setMsg(error.message);
+    }
+  }
+
+  async function findUserByEmail(targetEmail) {
+    const normalizedEmail = targetEmail.trim().toLowerCase();
+
+    if (!normalizedEmail) return null;
+
+    const q = query(
+      collection(db, "users"),
+      where("email", "==", normalizedEmail)
+    );
+
+    const snapshot = await getDocs(q);
+
+    if (snapshot.empty) return null;
+
+    const docSnap = snapshot.docs[0];
+
+    return {
+      id: docSnap.id,
+      ...docSnap.data(),
+    };
+  }
+
+  async function handleBlockUser(e) {
+    e.preventDefault();
+    setBlockMsg("");
+
+    if (!currentUser) return;
+
+    try {
+      const targetUser = await findUserByEmail(blockEmail);
+
+      if (!targetUser) {
+        setBlockMsg("找不到這個 Gmail 對應的使用者");
+        return;
+      }
 
       if (targetUser.uid === currentUser.uid) {
-        setMsg("不能封鎖自己");
+        setBlockMsg("不能封鎖自己");
         return;
       }
 
@@ -112,16 +209,19 @@ export default function ProfilePage() {
       setBlockedUsers((prev) =>
         prev.includes(targetUser.uid) ? prev : [...prev, targetUser.uid]
       );
+
       setBlockEmail("");
-      setMsg("封鎖成功");
+      setBlockMsg("已封鎖使用者");
     } catch (error) {
-      console.error(error);
-      setMsg("封鎖失敗");
+      console.error("Block user error:", error);
+      setBlockMsg(error.message);
     }
   }
 
-  async function handleUnblock(uid) {
-    setMsg("");
+  async function handleUnblockUser(uid) {
+    setBlockMsg("");
+
+    if (!currentUser) return;
 
     try {
       await updateDoc(doc(db, "users", currentUser.uid), {
@@ -130,102 +230,180 @@ export default function ProfilePage() {
       });
 
       setBlockedUsers((prev) => prev.filter((item) => item !== uid));
-      setMsg("已解除封鎖");
+      setBlockMsg("已解除封鎖");
     } catch (error) {
-      console.error(error);
-      setMsg("解除封鎖失敗");
+      console.error("Unblock user error:", error);
+      setBlockMsg(error.message);
     }
   }
 
+  const displayInitial =
+    username?.charAt(0)?.toUpperCase() ||
+    email?.charAt(0)?.toUpperCase() ||
+    "U";
+
   return (
-    <div style={{ padding: "24px", overflowY: "auto", height: "100%" }}>
-      <h1>User Profile</h1>
+    <div className="profile-page">
+      <div className="profile-card">
+        <h1>Profile Settings</h1>
 
-      <form
-        onSubmit={handleSave}
-        style={{ display: "grid", gap: "12px", maxWidth: "420px" }}
-      >
-        <input
-          name="username"
-          placeholder="Username"
-          value={form.username}
-          onChange={handleChange}
-        />
+        <div className="profile-preview-section">
+          <div className="profile-preview-avatar">
+            {photoURL.trim() && !previewError ? (
+              <img
+                src={photoURL.trim()}
+                alt="profile preview"
+                onError={() => setPreviewError(true)}
+              />
+            ) : (
+              <span>{displayInitial}</span>
+            )}
+          </div>
 
-        <input
-          name="email"
-          placeholder="Email"
-          value={form.email}
-          onChange={handleChange}
-        />
+          <div className="profile-preview-info">
+            <h2>{username || "Username Preview"}</h2>
+            <p>{email || "email@example.com"}</p>
 
-        <input
-          name="phone"
-          placeholder="Phone number"
-          value={form.phone}
-          onChange={handleChange}
-        />
+            {photoURL.trim() && !previewError && (
+              <p className="profile-preview-success">
+                圖片預覽成功，按 Save 後才會儲存
+              </p>
+            )}
 
-        <input
-          name="address"
-          placeholder="Address"
-          value={form.address}
-          onChange={handleChange}
-        />
+            {photoURL.trim() && previewError && (
+              <p className="profile-preview-error">
+                這個圖片 URL 無法載入，請確認連結是否正確
+              </p>
+            )}
 
-        <input
-          name="photoURL"
-          placeholder="Profile picture URL"
-          value={form.photoURL}
-          onChange={handleChange}
-        />
+            {!photoURL.trim() && (
+              <p className="profile-preview-muted">
+                尚未輸入圖片 URL，會使用預設頭像
+              </p>
+            )}
+          </div>
+        </div>
 
-        <button type="submit">Save Profile</button>
-      </form>
+        <form onSubmit={handleSaveProfile} className="profile-form">
+          <label>
+            Username
+            <input
+              type="text"
+              placeholder="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+          </label>
 
-      <div style={{ marginTop: "32px", maxWidth: "420px" }}>
-        <h2>Block User</h2>
+          <label>
+            Email
+            <input
+              type="email"
+              placeholder="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </label>
 
-        <form
-          onSubmit={handleBlockByEmail}
-          style={{ display: "grid", gap: "12px" }}
-        >
-          <input
-            type="email"
-            placeholder="輸入要封鎖的 email"
-            value={blockEmail}
-            onChange={(e) => setBlockEmail(e.target.value)}
-          />
-          <button type="submit">Block</button>
+          <label>
+            Phone
+            <input
+              type="text"
+              placeholder="phone"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+            />
+          </label>
+
+          <label>
+            Address
+            <input
+              type="text"
+              placeholder="address"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+            />
+          </label>
+
+          <label>
+            Profile Picture URL
+            <input
+              type="url"
+              placeholder="https://example.com/avatar.png"
+              value={photoURL}
+              onChange={(e) => setPhotoURL(e.target.value)}
+            />
+          </label>
+
+          <button type="submit">Save Profile</button>
         </form>
 
-        <div style={{ marginTop: "20px" }}>
-          <h3>Blocked Users</h3>
+        {msg && <p className="profile-message">{msg}</p>}
 
-          {blockedUsers.length === 0 ? (
-            <p>目前沒有封鎖任何人</p>
-          ) : (
-            blockedUsers.map((uid) => (
-              <div
-                key={uid}
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  border: "1px solid #ccc",
-                  padding: "8px 12px",
-                  marginBottom: "8px",
-                }}
-              >
-                <span>{uid}</span>
-                <button onClick={() => handleUnblock(uid)}>Unblock</button>
-              </div>
-            ))
-          )}
-        </div>
+        <hr style={{ margin: "24px 0" }} />
+
+        <section className="block-user-section">
+          <h2>Block User</h2>
+
+          <p className="profile-preview-muted">
+            輸入對方 Gmail 來封鎖使用者。封鎖後，私聊會無法傳送訊息，群組中也會隱藏彼此訊息。
+          </p>
+
+          <form onSubmit={handleBlockUser} className="profile-form">
+            <label>
+              User Gmail
+              <input
+                type="email"
+                placeholder="target@example.com"
+                value={blockEmail}
+                onChange={(e) => setBlockEmail(e.target.value)}
+              />
+            </label>
+
+            <button type="submit">Block User</button>
+          </form>
+
+          {blockMsg && <p className="profile-message">{blockMsg}</p>}
+
+          <div className="blocked-list">
+            <h3>Blocked Users</h3>
+
+            {blockedProfiles.length === 0 ? (
+              <p className="profile-preview-muted">目前沒有封鎖任何使用者</p>
+            ) : (
+              blockedProfiles.map((user) => {
+                const displayName = user.username || user.email || user.uid;
+                const initial = displayName.charAt(0).toUpperCase();
+
+                return (
+                  <div key={user.uid} className="blocked-user-row">
+                    <div className="blocked-user-avatar">
+                      {user.photoURL ? (
+                        <img src={user.photoURL} alt="blocked user avatar" />
+                      ) : (
+                        <span>{initial}</span>
+                      )}
+                    </div>
+
+                    <div className="blocked-user-info">
+                      <strong>{displayName}</strong>
+                      <span>{user.email || user.uid}</span>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="unblock-button"
+                      onClick={() => handleUnblockUser(user.uid)}
+                    >
+                      Unblock
+                    </button>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </section>
       </div>
-
-      {msg && <p style={{ marginTop: "16px" }}>{msg}</p>}
     </div>
   );
 }
