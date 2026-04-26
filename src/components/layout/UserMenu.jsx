@@ -82,7 +82,7 @@ export default function UserMenu({
                 onGoProfile?.();
               }}
             >
-              ⚙️ Profile Settings
+              ⚙️ Profile Settings / Block
             </button>
 
             <button

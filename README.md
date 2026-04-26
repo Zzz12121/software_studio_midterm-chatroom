@@ -1,230 +1,1388 @@
-# Software Studio Midterm Project README
+# Strong Bruce Chatroom
 
-## 專案需求 Checklist
+Strong Bruce Chatroom is a real-time web chatroom application built with React, Vite, Firebase Authentication, Cloud Firestore, Firebase Hosting, and the GIPHY API.
 
-本 README 先整理簡報中的 **所有需求項目**，並依照大項分類，附上各項分數，方便後續逐項完成與檢查。
-要加這個在.env
+This README explains:
+
+1. how to operate the website,
+2. where each scoring-related function is implemented,
+3. how TAs can find and test each function,
+4. how to set up the project locally.
+
+---
+
+## Website Links
+
+```text
+Firebase Hosting URL: https://ss-mid-3bd1d.web.app
+GitHub Repository: https://github.com/Zzz12121/software_studio_midterm-chatroom.git
+```
+
+If the Firebase Hosting URL above is different from the submitted eeclass URL, please use the eeclass submitted URL as the final deployed website.
+
+---
+
+## Website Overview
+
+When users open the website, the app first displays an intro animation.
+
+The animation starts with ASCII art of my friend "Strong Bruce" and then transitions into the brand title:
+
+```text
+Strong Bruce Chatroom
+```
+
+After the animation finishes, the app automatically enters either:
+
+- the sign-in / sign-up page, if the user is not logged in
+- the chatroom page, if the user has already logged in
+
+The main chatroom interface uses a Messenger-like layout:
+
+- left sidebar: user menu, create chatroom panel, and chatroom list
+- right panel: selected chatroom, message history, search bar, chatroom settings, and message input area
+
+---
+
+# Feature Guide
+
+## 1. Opening Animation and Branding
+
+**Score category:** Advanced Component - CSS Animation (2%)
+
+### Function
+
+The website starts with a splash animation. The screen first shows ASCII art, then transitions into the brand name `Strong Bruce Chatroom`.
+
+### How to Use
+
+1. Open or refresh the website.
+2. Watch the ASCII art intro.
+3. Wait for it to transform into `Strong Bruce Chatroom`.
+4. The app automatically enters the login page or chatroom page.
+
+
+### Location
+
+```text
+src/components/common/SplashScreen.jsx
+src/assets/strong_bruce_ascii_art.txt
+src/index.css
+```
+
+<img src="./img/intro.png" alt="Opening Animation" width="700">
+---
+
+## 2. Email Sign Up
+
+**Score category:** Basic Component - Membership Mechanism (5%)
+
+### Function
+
+Users can create an account using email and password.
+
+### How to Use
+
+1. Open the website.
+2. Click `Sign Up`.
+3. Enter email, password, and username.
+4. Click `Sign Up`.
+5. The account is created in Firebase Authentication.
+6. A user profile document is created in Firestore under `users/{uid}`.
+
+### Firestore User Document
+
+```js
+{
+  uid: "user uid",
+  email: "user@example.com",
+  username: "username",
+  phone: "",
+  address: "",
+  photoURL: "",
+  blockedUsers: [],
+  createdAt: timestamp,
+  updatedAt: timestamp
+}
+```
+
+### Location
+
+```text
+src/pages/SignUpPage.jsx
+src/contexts/AuthContext.jsx
+src/firebase/firebase.js
+```
+<img src="./img/signup.png" alt="Sign Up" width="700">
+---
+
+## 3. Email Sign In
+
+**Score category:** Basic Component - Membership Mechanism (5%)
+
+### Function
+
+Registered users can sign in with email and password.
+
+### How to Use
+
+1. Click `Sign In`.
+2. Enter email and password.
+3. Click `Sign In`.
+4. The user enters the chatroom page.
+
+### Location
+
+```text
+src/pages/SignInPage.jsx
+src/contexts/AuthContext.jsx
+src/firebase/firebase.js
+```
+<img src="./img/signin.png" alt="Sign In" width="700">
+---
+
+## 4. Google Sign In
+
+**Score category:** Advanced Component - Third-party Sign In (1%)
+
+### Function
+
+Users can sign in with a Google account.
+
+When a user signs in with Google, the app creates or updates the user's Firestore profile document so that other users can find this account by Gmail.
+
+### How to Use
+
+1. Go to the `Sign In` page.
+2. Click `Sign In with Google`.
+3. Choose a Google account.
+4. The user enters the chatroom page.
+
+### Important Behavior
+
+Google login creates or updates:
+
+```text
+users/{uid}
+```
+
+This allows:
+
+- Gmail-based user search
+- username display
+- profile picture display
+- direct chatroom avatar and name display
+
+### Location
+
+```text
+src/pages/SignInPage.jsx
+src/firebase/firebase.js
+```
+<img src="./img/signingoogle.png" alt="Sign In Google" width="700">
+---
+
+## 5. Firebase Hosting
+
+**Score category:** Basic Component - Firebase Hosting (5%)
+
+### Function
+
+The project is deployed using Firebase Hosting.
+
+### How to Use
+
+1. Open the deployed Firebase Hosting URL.
+2. The splash animation appears first.
+3. The app enters the login page or the chatroom page.
+
+### Location
+
+```text
+firebase.json
+.firebaserc
+dist/
+```
+<img src="./img/firebasehost.png" alt="Firebase Hosting" width="700">
+---
+
+## 6. Authenticated Database Read and Write
+
+**Score category:** Basic Component - Database Read / Write (5%)
+
+### Function
+
+The app uses Cloud Firestore to store users, chatrooms, and messages.
+All Firestore read/write operations are protected by Firebase Authentication. Users must sign in before accessing `users`, `chatrooms`, or `messages`. Firestore Security Rules check `request.auth != null`, and chatroom/message access is limited to authenticated chatroom members.
+
+### Main Collections
+
+```text
+users
+chatrooms
+chatrooms/{chatroomId}/messages
+```
+
+### Chatroom Document Example
+
+```js
+{
+  type: "direct" | "group",
+  name: "group name",
+  photoURL: "group photo url",
+  createdBy: "uid",
+  members: ["uid1", "uid2"],
+  lastMessage: "latest message preview",
+  lastSenderId: "uid",
+  lastMessageAt: timestamp,
+  createdAt: timestamp,
+  updatedAt: timestamp
+}
+```
+
+### Message Document Example
+
+```js
+{
+  senderId: "uid",
+  text: "message text",
+  type: "text" | "image" | "gif",
+  imageURL: "",
+  imageName: "",
+  gifURL: "",
+  gifTitle: "",
+  giphyURL: "",
+  unsent: false,
+  edited: false,
+  replyTo: null,
+  reactions: {},
+  createdAt: timestamp,
+  updatedAt: timestamp
+}
+```
+
+### Location
+
+```text
+src/pages/SignUpPage.jsx
+src/pages/SignInPage.jsx
+src/pages/ChatPage.jsx
+src/pages/ProfilePage.jsx
+src/components/chat/
+```
+
+---
+
+## 7. Responsive Web Design
+
+**Score category:** Basic Component - RWD (5%)
+
+### Function
+
+The website layout adapts to different screen sizes.
+
+### How to Test
+
+1. Open the website.
+2. Resize the browser window.
+3. Confirm that the chatroom layout remains usable.
+4. Confirm that the whole page does not create unnecessary full-page scrolling.
+5. Confirm that only internal areas scroll:
+   - chatroom list
+   - message area
+   - dropdown panels
+   - GIF search panel
+
+### Location
+
+```text
+src/index.css
+src/pages/ChatPage.jsx
+```
+
+---
+
+## 8. Git Version Control
+
+**Score category:** Basic Component - Git (5%)
+
+### Function
+
+The project uses Git and GitHub for version control.
+
+### Location
+
+```text
+GitHub Repository: https://github.com/Zzz12121/software_studio_midterm-chatroom.git
+```
+<img src="./img/git.png" alt="Git" width="700">
+---
+
+# Chatroom Features
+
+## 9. Main Chatroom Layout
+
+### Function
+
+After login, the user enters the main chatroom page.
+
+### Left Sidebar
+
+- user avatar
+- username / email
+- user dropdown menu
+- create chatroom form
+- chatroom list
+- unread badges
+
+### Right Panel
+
+- selected chatroom header
+- chatroom setting dropdown
+- message search input
+- message history
+- message input area
+- Image / GIF / Send controls
+
+### Location
+
+```text
+src/pages/ChatPage.jsx
+src/components/layout/UserMenu.jsx
+src/components/chat/ChatroomList.jsx
+src/components/chat/ChatroomMenu.jsx
+src/components/chat/MessageList.jsx
+src/components/chat/MessageInput.jsx
+```
+
+---
+
+## 10. Create Direct Chatroom by Gmail
+
+**Score category:** Basic Component - Chatroom (part of 25%)
+
+### Function
+
+Users can create private one-to-one chatrooms by entering another user's Gmail address.
+
+### How to Use
+
+1. Sign in.
+2. Go to the left sidebar.
+3. In `Create Chatroom`, select `direct`.
+4. Enter the other user's Gmail.
+5. Click `Create Chatroom`.
+
+### Important Behavior
+
+For direct chatrooms:
+
+- the chatroom name is the other user's username
+- the chatroom avatar is the other user's profile picture
+- if username is unavailable, email is used as fallback
+
+### Location
+
+```text
+Left sidebar → Create Chatroom → direct
+```
+<img src="./img/direct.png" alt="Direct" width="700">
+---
+
+## 11. Create Group Chatroom by Gmail
+
+**Score category:** Basic Component - Chatroom (part of 25%)
+
+### Function
+
+Users can create group chatrooms by entering member Gmail addresses.
+
+### How to Use
+
+1. Sign in.
+2. Go to the left sidebar.
+3. In `Create Chatroom`, select `group`.
+4. Enter a group name.
+5. Optionally enter a group avatar URL.
+6. Enter member Gmail addresses separated by commas.
+7. Click `Create Chatroom`.
+
+### Example
+
+```text
+test1@gmail.com, test2@gmail.com, test3@gmail.com
+```
+
+### Location
+
+```text
+Left sidebar → Create Chatroom → group
+```
+<img src="./img/create_group.png" alt="Create Group" width="700">
+---
+
+## 12. Chatroom List with Avatar, Last Message, and Unread Badge
+
+### Function
+
+The left sidebar displays all chatrooms joined by the current user.
+
+Each chatroom card shows:
+
+- avatar
+- chatroom name
+- latest message preview
+- unread red badge
+
+### Direct Chatroom Display
+
+Direct chatrooms display the other user's username and profile picture.
+
+### Group Chatroom Display
+
+Group chatrooms display the group name and group avatar.
+
+### Location
+
+```text
+Left sidebar → 你的聊天室
+```
+
+---
+
+## 13. Real-Time Message Sending
+
+**Score category:** Basic Component - Chatroom (part of 25%)
+
+### Function
+
+Users can send real-time text messages.
+
+### How to Use
+
+1. Select a chatroom.
+2. Type a message.
+3. Press `Enter` or click `Send`.
+
+### Keyboard Behavior
+
+```text
+Enter = send message
+Shift + Enter = new line
+```
+
+### Location
+
+```text
+Bottom message input area
+```
+
+---
+
+## 14. Load Message History
+
+**Score category:** Basic Component - Chatroom (part of 25%)
+
+### Function
+
+Previous messages are loaded from Firestore when a chatroom is opened.
+
+### How to Use
+
+1. Select a chatroom.
+2. Previous messages appear in the message area.
+
+### Location
+
+```text
+Right message area
+```
+
+---
+
+## 15. Invite Member by Gmail
+
+**Score category:** Basic Component - Chatroom Invite (part of 25%)
+
+### Function
+
+Users can invite new members to a chatroom by Gmail.
+
+### How to Use
+
+1. Select a chatroom.
+2. Click the chatroom header bar.
+3. Find `Invite Member`.
+4. Enter the target user's Gmail.
+5. Click `Invite`.
+
+### Location
+
+```text
+Selected chatroom → top chatroom bar → Invite Member
+```
+<img src="./img/addmember.png" alt="add member" width="700">
+---
+
+## 16. View Chatroom Members
+
+### Function
+
+Users can view all members in the selected chatroom.
+
+### How to Use
+
+1. Select a chatroom.
+2. Click the chatroom header bar.
+3. Find the `Members` section.
+
+The member list shows:
+
+- profile picture
+- username
+- email
+- current user indicator
+
+### Location
+
+```text
+Selected chatroom → top chatroom bar → Members
+```
+<img src="./img/addmember.png" alt="add member" width="700">
+---
+
+## 17. Remove Group Member
+
+### Function
+
+Group chatrooms support member removal.
+
+### How to Use
+
+1. Select a group chatroom.
+2. Click the chatroom header bar.
+3. Open `Members`.
+4. Click `Remove`.
+
+### Important Behavior
+
+- Only group chatrooms show `Remove`.
+- Direct chatrooms do not show `Remove`.
+- Removed users no longer see the group chatroom.
+
+### Location
+
+```text
+Group chatroom → top chatroom bar → Members → Remove
+```
+<img src="./img/addmember.png" alt="add member" width="700">
+---
+
+## 18. Edit Group Chatroom Name and Avatar
+
+### Function
+
+Group chatrooms support editable group name and group avatar URL.
+
+### How to Use
+
+1. Select a group chatroom.
+2. Click the chatroom header bar.
+3. In `Group Settings`, edit the group name or avatar URL.
+4. Click `Save Group Profile`.
+
+### Location
+
+```text
+Group chatroom → top chatroom bar → Group Settings
+```
+<img src="./img/addmember.png" alt="add member" width="700">
+---
+
+# Advanced Features
+
+## 19. React Framework
+
+**Score category:** Advanced Component - React Framework (5%)
+
+The project is built with React and Vite.
+
+### Location
+
+```text
+src/main.jsx
+src/App.jsx
+src/components/
+src/pages/
+```
+
+---
+
+## 20. Chrome Unread Notification
+
+**Score category:** Advanced Component - Chrome Notification (5%)
+
+### Function
+
+The app supports Chrome notifications for unread messages.
+
+### How to Use
+
+1. Open the website in Chrome.
+2. Allow notification permission.
+3. Stay outside a chatroom or switch to another chatroom.
+4. When a new unread message arrives, Chrome displays a notification.
+
+### Location
+
+```text
+src/components/chat/NotificationManager.jsx
+src/components/chat/ChatroomList.jsx
+```
+
+---
+
+## 21. CSS Animation
+
+**Score category:** Advanced Component - CSS Animation (2%)
+
+### Implemented Animations
+
+- ASCII art splash animation
+- Strong Bruce Chatroom brand transition
+- message render animation
+- unread badge pulse animation
+- send/ GIF/ image button
+### Notes
+
+
+
+### Location
+
+```text
+src/components/common/SplashScreen.jsx
+src/index.css
+```
+
+---
+
+## 22. Safe Display for Code Messages
+
+**Score category:** Advanced Component - Deal with Problems When Sending Code (2%)
+
+### Function
+
+Messages that look like HTML or JavaScript code are displayed as plain text.
+
+### Test Case
+
+Send:
+
+```html
+<script>alert("example");</script>
+```
+
+Expected:
+
+- it appears as text
+- it is not executed
+- no alert appears
+
+Send:
+
+```html
+<h1>example</h1>
+```
+
+Expected:
+
+- it appears as text
+- it does not become a real heading
+
+### Location
+
+```text
+src/components/chat/MessageList.jsx
+```
+
+---
+
+## 23. User Profile Page
+
+**Score category:** Advanced Component - User Profile (10%)
+
+### Function
+
+Users can edit profile information.
+
+Editable fields:
+
+- profile picture URL
+- username
+- email
+- phone number
+- address
+
+### Current Profile Picture Behavior
+
+The profile picture is edited by entering an image URL.
+
+The profile page immediately previews the image represented by the current URL before the user saves. If the URL is invalid, the app shows a fallback avatar and an error message. The URL is saved only after the user clicks `Save Profile`.
+
+### How to Use
+
+1. Click the top-left user avatar / username.
+2. Click `Profile Settings`.
+3. Edit the profile fields.
+4. Paste a profile picture URL.
+5. Confirm that the preview image updates immediately.
+6. Click `Save Profile`.
+7. Click `Back to Chat`.
+
+### Example Image URLs for Testing
+
+```text
+https://picsum.photos/200
+https://i.pravatar.cc/200
+```
+
+### Location
+
+```text
+Top-left user menu → Profile Settings
+src/pages/ProfilePage.jsx
+```
+<img src="./img/profile1.png" alt="Profile1" width="700">
+<img src="./img/profile2.png" alt="Profile2" width="700">
+---
+
+# Message Operations
+
+## 24. Unsend Own Message
+
+**Score category:** Advanced Component - Message Operation (part of 10%)
+
+### How to Use
+
+1. Hover over your own message.
+2. Click the trash can icon.
+3. The message becomes:
+
+```text
+此訊息已收回
+```
+
+### Important Behavior
+
+- users can only unsend their own messages
+- image and GIF messages can also be unsent
+<img src="./img/unsend.png" alt="unsend" width="700">
+---
+
+## 25. Edit Own Text Message
+
+**Score category:** Advanced Component - Message Operation (part of 10%)
+
+### How to Use
+
+1. Hover over your own text message.
+2. Click the pencil icon.
+3. Edit the message.
+4. Save.
+
+### Important Behavior
+
+- only text messages can be edited
+- image and GIF messages cannot be edited
+<img src="./img/unsend.png" alt="unsend" width="700">
+---
+
+## 26. Search Messages
+
+**Score category:** Advanced Component - Message Operation (part of 10%)
+
+### How to Use
+
+1. Select a chatroom.
+2. Use the top-right search box.
+3. Type a keyword.
+4. Matching messages are displayed.
+<img src="./img/search.png" alt="search" width="700">
+---
+
+## 27. Send Image
+
+**Score category:** Advanced Component - Message Operation (part of 10%)
+
+### How to Use
+
+1. Select a chatroom.
+2. Click `Image`.
+3. Select an image file from the local computer.
+4. Confirm the preview.
+5. Click `Send`.
+
+### Important Behavior
+
+- image size is limited
+- image messages can be unsent
+- image messages are displayed in the message list
+
+### Notes
+
+This message image feature uses local image file upload through the browser input. The profile picture feature uses image URL input and preview.
+
+---
+
+## 28. Unsend Image
+
+**Score category:** Advanced Component - Message Operation (part of 10%)
+
+### How to Use
+
+1. Send an image.
+2. Hover over the image message.
+3. Click the trash can icon.
+4. The image is removed and the message becomes:
+
+```text
+此訊息已收回
+```
+
+---
+
+## 29. Hover Message Action Icons
+
+### Function
+
+Message action icons appear only when hovering over a message.
+
+### Icons
+
+For own text messages:
+
+```text
+pencil icon = edit
+trash can icon = unsend
+reply icon = reply
+```
+
+For own image or GIF messages:
+
+```text
+trash can icon = unsend
+reply icon = reply
+```
+
+For other users' messages:
+
+```text
+reply icon = reply
+```
+<img src="./img/diff.png" alt="diff" width="700">
+---
+
+# Bonus Features
+
+## 30. Block User
+
+**Score category:** Bonus Component - Block User (2%)
+
+### Function
+
+Users can block other users by Gmail from the profile settings page.
+
+### How to Use
+
+1. Click the top-left user avatar / username.
+2. Click `Profile Settings`.
+3. Find the `Block User` section.
+4. Enter the target user's Gmail.
+5. Click `Block User`.
+6. The blocked user appears in the `Blocked Users` list.
+7. Click `Unblock` to remove the user from the block list.
+
+### Direct Chatroom Behavior
+
+If a user is blocked:
+
+- a warning is shown in the direct chat
+- sending messages is disabled in the blocked direct chat
+
+### Group Chatroom Behavior
+
+When the blocker and blocked user are in the same group chat:
+
+- their messages are mutually hidden
+
+### Location
+
+```text
+Top-left user menu → Profile Settings → Block User
+src/pages/ProfilePage.jsx
+src/pages/ChatPage.jsx
+src/components/chat/MessageList.jsx
+```
+<img src="./img/profile1.png" alt="block2" width="700">
+<img src="./img/block2.png" alt="block2" width="700">
+---
+
+## 31. Reply to Specific Message
+
+**Score category:** Bonus Component - Reply for Specific Message (6%)
+
+### How to Use
+
+1. Hover over a message.
+2. Click the reply icon.
+3. The original message appears above the input.
+4. Send the reply.
+
+### Implemented Behavior
+
+- reply preview is shown above the input
+- sent reply message shows the original message preview
+- clicking the reply preview highlights the original message
+- clicking the reply preview scrolls to the original message
+- replies support text, image, GIF, and unsent message previews
+
+---
+
+## 32. Send GIF with GIPHY API
+
+**Score category:** Bonus Component - Send GIF API (3%)
+
+### Function
+
+Users can search and send GIFs using the GIPHY API.
+
+The original assignment mentioned Tenor API, but the implementation uses GIPHY because the original Tenor API option was no longer available.
+
+### How to Use
+
+1. Select a chatroom.
+2. Click `GIF`.
+3. Type a keyword, such as:
+
+```text
+happy
+```
+
+4. Click `Search`.
+5. Click one GIF from the result grid.
+6. The GIF is sent to the chatroom.
+
+### Important Behavior
+
+- only GIF URLs and metadata are stored in Firestore
+- GIF files are loaded from GIPHY
+- GIF messages cannot be edited
+- GIF messages can be unsent
+- GIF messages can be replied to
+- chatroom latest message shows `[GIF]`
+<!--
+### Required Environment Variable
+
+```env
+VITE_GIPHY_API_KEY=your_giphy_api_key
+```
+-->
+---
+
+# Extra UI and Usability Features
+
+## 33. User Dropdown Menu
+
+### Function
+
+Clicking the top-left user profile opens a dropdown.
+
+### Options
+
+- Profile Settings
+- Logout
+
+Clicking outside the dropdown closes it.
+
+---
+
+## 34. Chatroom Dropdown Menu
+
+### Function
+
+Clicking the selected chatroom header opens the chatroom menu.
+
+### Direct Chatroom Menu
+
+- Invite Member
+- Members list
+
+### Group Chatroom Menu
+
+- Group Settings
+- Edit group name
+- Edit group avatar URL
+- Invite Member
+- Members list
+- Remove member controls
+
+### How to Edit Group Name and Group Avatar
+
+1. Select a group chatroom.
+2. Click the selected chatroom header at the top of the chat area.
+3. Find the `Group Settings` section.
+4. Edit the group name.
+5. Edit the group avatar URL.
+6. Click `Save Group Profile`.
+7. The updated group name and avatar will appear in the chatroom header and the left chatroom list.
+
+### How to Remove Group Members
+
+1. Select a group chatroom.
+2. Click the selected chatroom header at the top of the chat area.
+3. Find the `Members` section.
+4. Click `Remove` next to the member you want to remove.
+5. The removed user will no longer see this group chatroom in their chatroom list.
+
+### Important Behavior
+
+- Group name and group avatar editing are only available in group chatrooms.
+- Member removal is only available in group chatrooms.
+- Direct chatrooms do not show group editing or remove member controls.
+- Clicking outside the dropdown closes it.
+
+---
+
+## 35. Message Input Usability
+
+### Function
+
+The message input area remains usable with long text, image preview, and reply preview.
+
+### Behavior
+
+- textarea grows with content
+- textarea scrolls internally after reaching maximum height
+- Image / GIF / Send buttons remain visible
+- `Enter` sends message
+- `Shift + Enter` creates a new line
+
+---
+
+## 36. Horizontal Hover Button Effect
+
+### Function
+
+The Image, GIF, and Send buttons use a horizontal block-style hover effect.
+
+### How to Use
+
+Move the mouse over `Image`, `GIF`, or `Send`. The button moves upward on hover.
+
+### Notes
+
+This is a UI polish effect and is not the main CSS animation scoring item.
+
+---
+
+## 37. Auto-scroll to Latest Message
+
+### Function
+
+When users enter or re-enter a chatroom, the message area automatically scrolls to the newest message.
+
+### How to Test
+
+1. Open a chatroom with many messages.
+2. Scroll upward.
+3. Switch to another chatroom.
+4. Switch back.
+5. The latest message should be visible.
+
+---
+
+## 38. Floating Panels Close on Outside Click
+
+### Function
+
+Floating panels close automatically when clicking outside them.
+
+### Included Panels
+
+- user dropdown menu
+- chatroom dropdown menu
+- GIF search panel
+
+---
+
+# Score Mapping Summary
+
+## Basic Components
+
+| Requirement | Score | Implemented Location |
+|---|---:|---|
+| Email Sign Up | 2.5% | Sign Up page |
+| Email Sign In | 2.5% | Sign In page |
+| Firebase Hosting | 5% | Firebase Hosting deployment |
+| Authenticated Database Read / Write | 5% | Firestore users, chatrooms, messages |
+| RWD | 5% | `src/index.css` |
+| Git version control | 5% | GitHub repository |
+| Create private chatrooms | part of 25% | Create Chatroom panel |
+| Other members can see messages | part of 25% | Firestore real-time messages |
+| Load chat history | part of 25% | MessageList |
+| Invite new members | part of 25% | Chatroom menu → Invite Member |
+| Group chatroom logic | part of 25% | Chatroom layout, group members, remove member |
+
+---
+
+## Advanced Components
+
+| Requirement | Score | Implemented Location |
+|---|---:|---|
+| React framework | 5% | Entire project |
+| Google Sign In | 1% | Sign In page |
+| Chrome unread notification | 5% | NotificationManager / ChatroomList |
+| CSS animation | 2% | Splash animation |
+| Safe code message display | 2% | MessageList |
+| User Profile | 10% | Profile Settings page |
+| Unsend message | part of 10% | Message hover actions |
+| Edit message | part of 10% | Message hover actions |
+| Search message | part of 10% | Chatroom search input |
+| Send image | part of 10% | Message input Image button |
+| Unsend image | part of 10% | Image message hover actions |
+
+---
+
+## Bonus Components
+
+| Requirement | Score | Implemented Location |
+|---|---:|---|
+| Block User | 2% | Profile Settings → Block User |
+| Send GIF by API | 3% | GIPHY GIF picker |
+| Reply specific message | 6% | Reply icon, reply preview, highlight, scroll |
+| Emoji message | 3% | Not implemented |
+| Chatbot | 2% | Not implemented |
+| Custom sticker | 10% | Not implemented |
+
+Implemented bonus total:
+
+```text
+Block User: 2%
+GIPHY GIF: 3%
+Reply specific message: 6%
+Total implemented bonus: 11%
+Maximum counted bonus: 10%
+```
+
+---
+<!-- 
+# Recommended TA Testing Flow
+
+## Step 1: Authentication
+
+1. Open the website.
+2. Watch the Strong Bruce Chatroom intro animation.
+3. Use Email Sign Up.
+4. Log out.
+5. Use Email Sign In.
+6. Log out.
+7. Use Google Sign In.
+
+## Step 2: Profile
+
+1. Click the top-left user menu.
+2. Click `Profile Settings`.
+3. Edit username, phone, address, email, and profile picture URL.
+4. Confirm the profile picture URL preview updates before saving.
+5. Save.
+6. Go back to chat.
+
+## Step 3: Direct Chatroom
+
+1. Use another registered user's Gmail.
+2. Create a direct chatroom.
+3. Confirm the direct chatroom shows the other user's username and avatar.
+4. Send messages.
+5. Confirm the other user can see messages.
+
+## Step 4: Group Chatroom
+
+1. Create a group chatroom.
+2. Add multiple members by Gmail.
+3. Open group settings from the chatroom header.
+4. Change group name and avatar URL.
+5. Invite another member.
+6. Remove a member.
+
+## Step 5: Message Operations
+
+1. Send text.
+2. Edit own text message.
+3. Unsend own text message.
+4. Send image.
+5. Unsend image.
+6. Send GIF.
+7. Unsend GIF.
+8. Search messages.
+
+## Step 6: Reply
+
+1. Hover over a message.
+2. Click reply icon.
+3. Confirm original message appears above the input.
+4. Send reply.
+5. Click the reply preview.
+6. Confirm the original message is highlighted and scrolled into view.
+
+## Step 7: Notification
+
+1. Use two accounts.
+2. Open different chatrooms.
+3. Send a message from one account.
+4. Confirm unread badge appears.
+5. Confirm Chrome notification appears if permission is granted.
+
+## Step 8: Block User
+
+1. Go to `Profile Settings`.
+2. In `Block User`, enter another user's Gmail.
+3. Click `Block User`.
+4. Confirm the user appears in the blocked list.
+5. Open a direct chatroom with that user.
+6. Confirm the direct chat warning appears.
+7. Confirm sending is disabled if the direct chat is blocked.
+8. In a group chatroom, confirm blocked users' messages are hidden.
+9. Return to profile and click `Unblock` to restore the relationship.
+
+---
+-->
+# Local Setup
+
+## 1. Clone the Repository
+
+```bash
+git clone https://github.com/Zzz12121/software_studio_midterm-chatroom.git
+cd software_studio_midterm-chatroom
+```
+
+If your local folder name is different, enter the folder that contains `package.json`.
+
+---
+
+## 2. Install Dependencies
+
+```bash
+npm install
+```
+
+Do not upload `node_modules` when submitting the project.
+
+---
+
+## 3. Create Environment File
+
+Create a `.env` file in the project root.
+
+```env
+VITE_GIPHY_API_KEY=your_giphy_api_key
+```
+or
+```env
 VITE_GIPHY_API_KEY=WwvcJWjuidOln7uvc3iDZnuxoNWNZfFU
----
-
-## 1. Basic Components（50%）
-
-### 1.1 Membership Mechanism（5%）
-- [✅] Email Sign Up
-- [✅] Email Sign In
-
-### 1.2 Host your Firebase page（5%）
-- [✅] 使用 Firebase Hosting 部署網站
-- [✅] 確認網站可正常運作
-
-### 1.3 Database read/write（5%）
-- [✅] 會員資料或其他資料需能讀寫
-- [✅] 資料存取必須使用 authenticated way
-
-### 1.4 RWD（5%）
-- [✅] 網站在不同尺寸裝置上都能正常顯示
-- [✅] 所有元件都必須可見，不能消失
-- [ ] 若小螢幕需要捲動才看得到主要版面，會被扣分
-
-### 1.5 Git（5%）
-- [✅] 使用 Git 做版本控制
-- [✅] 要定期 commit，不可只在最後一天 commit
-
-### 1.6 Chatroom（25%）
-- [✅] 可建立 private chatroom，與本網站註冊會員聊天
-- [✅] 其他成員可在 chatroom 中看到你的訊息
-- [✅] 載入目前 chatroom 的所有歷史訊息
-- [✅] 可邀請新成員加入 chatroom
-- [✅] 可參考 Messenger 的 chatroom 邏輯設計
+```
+This is required for the GIF search feature.
 
 ---
 
-## 2. Advanced Components（35%）
+## 4. Firebase Configuration
 
-### 2.1 Using framework（5%）
-- [✅] 使用 React 或其他 framework
+The Firebase config is located in:
 
-### 2.2 Third-party Sign Up / Sign In（1%）
-- [ ] 使用 Google 或其他第三方帳號登入／註冊
+```text
+src/firebase/firebase.js
+```
 
-### 2.3 Chrome notification（5%）
-- [ ] 支援 Chrome 通知
-- [ ] TA 會使用 Chrome 驗證
-- [ ] 應通知 unread message，而不是所有訊息都通知
+This project uses:
 
-### 2.4 CSS animation（2%）
-- [ ] 使用 CSS animation
-- [ ] Button hover 不算 animation
+- Firebase Authentication
+- Cloud Firestore
+- Firebase Hosting
 
-### 2.5 Deal with problems when sending code（2%）
-- [✅] 處理訊息中包含程式碼或 HTML 標籤的情況
-- [✅] 例如：`<script>alert("example");</script>`
-- [✅] 例如：`<h1>example</h1>`
+For local testing, the Firebase project must have:
 
-### 2.6 User Profile（10%）
-- [✅] Profile 需做成 modal 或獨立頁面
-- [✅] 可編輯並儲存 Profile picture
-- [✅] 可編輯並儲存 Username
-- [✅] 可編輯並儲存 Email
-- [✅] 可編輯並儲存 Phone number
-- [✅] 可編輯並儲存 Address
-- [✅] 在 chatroom 中至少顯示 email、username、profile picture 其中一項
-
-### 2.7 Message operation（10%）
-- [ ] Unsend message（只能收回自己傳的訊息）
-- [ ] Edit message（只能編輯自己傳的訊息）
-- [ ] Search message（可搜尋所有訊息）
-- [ ] Send image（也可收回自己傳的圖片）
+- Email/Password sign-in enabled
+- Google sign-in enabled
+- Cloud Firestore enabled
+- authorized domains set correctly for Google login
 
 ---
 
-## 3. Bonus Components（at most 10%）
+## 5. Start the Local Development Server
 
-### 3.1 Chatbot（2%）
-- [ ] 使用 ChatGPT 或 Gemini API 做 chatbot
+```bash
+npm run dev
+```
 
-### 3.2 Block User（2%）
-- [ ] User A 封鎖 User B 後，User B 不能再傳 direct message 給 User A
-- [ ] 若兩人已有聊天紀錄，UI 要顯示 warning notification
-- [ ] 若兩人在同一個 group chat 中，彼此訊息需互相隱藏
+Then open the local URL shown in the terminal, usually:
 
-### 3.3 Send gif from Tenor API（3%）
-- [ ] 可從 Tenor API 傳送 GIF
-
-### 3.4 Message emoji（3%）
-- [ ] 可對訊息傳送 emoji
-- [ ] emoji 數量可自行決定
-- [ ] 使用者可收回自己送出的 emoji
-- [ ] 多人對同一則訊息送 emoji 時，顯示方式可自行設計
-
-### 3.5 Reply for specify message（6%）
-- [✅] 可回覆指定訊息（包含自己的訊息）【3%】
-- [✅] 使用者輸入回覆時，要在文字輸入框上方顯示被回覆的原訊息【1%】
-- [✅] 點擊回覆訊息時，原訊息要有 visual highlight【1%】
-- [✅] 點擊回覆訊息時，若原訊息不在畫面內，要自動 scroll 到原訊息【1%】
-
-### 3.6 Send custom sticker into chatroom（10%）
-#### Request
-- [ ] 使用者點 drawing button 後，canvas UI 才出現
-- [ ] custom sticker 傳送後不可再編輯
-- [ ] 使用者畫圖時，chatroom box 會變成 canvas
-- [ ] 若無法維持正確位置，可當一般圖片送出，但第三條件不給分
-
-#### Score criteria
-- [ ] Multiple colors to choose【2%】
-- [ ] Multiple brush to choose【2%】
-- [ ] Sticker 應顯示在使用者畫的位置【4%】
-- [ ] Custom sticker 可以 unsend【2%】
+```text
+http://localhost:5173/
+```
 
 ---
 
-## 4. Scoring Summary（105%）
-- [ ] Basic components：50%
-- [ ] Advance components：35%
-- [ ] Total Completeness（subjective）：10%
-- [ ] Bonus components：10%
-- [ ] Total：105%
+## 6. Build for Production
 
-### 額外扣分注意
-- [ ] README 不完整：-5
-- [ ] SOP 不完整：-10
+```bash
+npm run build
+```
 
----
+The production build output is generated in:
 
-## 5. AI Usage
-
-若開發時有使用 AI 工具，根目錄必須包含 **AI_reference.pdf**，內容需包含：
-
-### 5.1 AI Tool(s) Used
-- [ ] 寫明使用的模型或工具（例如 ChatGPT、Gemini）
-
-### 5.2 Scope of Usage
-對每一段由 AI 生成或協助的程式碼，都需記錄：
-- [ ] Location：檔名與行號（例如 App.js, lines 45-82）
-- [ ] Prompt & Response：完整 prompt 與 AI 回覆（建議附截圖）
-- [ ] Refinement & Explanation：修改後版本、修改原因與邏輯說明
-
-### 5.3 Statement of Non-Usage
-- [ ] 若未使用 AI，PDF 中需寫：`No AI tools were used in this assignment.`
+```text
+dist/
+```
 
 ---
 
-## 6. Reminder / Submission Requirements
+## 7. Deploy to Firebase Hosting
 
-### 6.1 Deploy
-- [ ] 將網站部署到 Firebase page
-- [ ] 確保網站可正常運作
-- [ ] 主頁檔名必須為 `index.html`
+```bash
+firebase deploy
+```
 
-### 6.2 Upload source code to FTP
-- [ ] 將原始碼上傳 FTP
-
-### 6.3 Zip file naming
-- [ ] 壓縮檔命名為 `Midterm_Project_學號.zip`
-- [ ] 若重新上傳，改為 `Midterm_Project_學號_v?.zip`
-
-### 6.4 Zip file content
-- [ ] 需包含 `index.html`, `.css`, `.js`, `README.md` 等必要檔案
-- [ ] 不可包含 `node_modules`
-- [ ] 若上傳 `node_modules`，扣 5 分
-
-### 6.5 MD5 checksum
-- [ ] 產生 zip 檔 MD5 checksum
-- [ ] 將 MD5 填入指定表單
-- [ ] 若未填 MD5，扣 10 分
-
-### 6.6 Deadline
-- [ ] FIRM deadline：`2026/05/07 23:59`
-- [ ] 以 commit time 為準
-
-### 6.7 eeclass submission
-- [ ] 繳交 MD5
-- [ ] 繳交網站連結
-- [ ] 繳交 GitHub URL
+The project uses `dist` as the Firebase Hosting public directory.
 
 ---
 
-## 7. 作業規則
-- [ ] 嚴禁抄襲
-- [ ] 抄襲者與被抄襲者直接當掉
-- [ ] 繳交期限三個星期，不得遲交
-- [ ] 沒有屍體分數
-- [ ] 評分方式以日後公布為主
+# Known Notes
 
----
+## Image Storage
 
-## 8. 如何不被判定抄襲？
-- [ ] 不要直接照抄網站、生成式 AI、朋友討論的程式碼
-- [ ] 應先理解內容，再用自己的邏輯重寫
-- [ ] 若有參考外部來源，建議先用 MOSS 比對
-- [ ] 建議將相似度控制在 20% 以下
+Image messages are stored as Base64 data in Firestore for demo purposes. To avoid exceeding Firestore document size limitations, the app restricts image size.
 
----
+## Profile Picture
 
-## 9. 作業繳交規則
-- [ ] 先對 zip 檔產生 MD5 checksum
-- [ ] 將 checksum 填入 Google 表單
-- [ ] 上傳 zip 到 FTP
-- [ ] 再將 MD5 和網址繳交至 eeclass
-- [ ] 若違反任一繳交 SOP，扣總分 10 分
-- [ ] 建議保留 zip 檔到成績公告或期末
+Profile pictures use image URLs. The profile edit page shows an instant preview before saving.
 
----
+## GIF Storage
 
-## 10. 作業繳交流程 SOP
-1. [ ] 將作業壓縮成指定格式 zip 檔
-2. [ ] 對 zip 檔產生 MD5
-3. [ ] 填寫 Google 表單
-4. [ ] 上傳 zip 到 FTP
-5. [ ] 將 MD5 與網址交到 eeclass
+GIF messages use GIPHY URLs instead of storing GIF files directly. Firestore only stores GIF metadata and URL fields.
 
----
+## GIPHY API Key
 
-## 11. 後續可補內容
-- [ ] Website 功能說明
-- [ ] 如何操作網站
-- [ ] 如何在本機一步一步 setup
-- [ ] Demo 截圖
-- [ ] Firebase deploy 流程
-- [ ] GitHub repo 說明
-- [ ] 已完成功能對照表
+The GIF feature requires:
+
+```env
+VITE_GIPHY_API_KEY=your_giphy_api_key
+```
+
+Without this key, the GIF search panel cannot search GIFs.
+
+## Firebase Storage
+
+Firebase Storage is not required for this project implementation.
+
+## Browser
+
+Chrome is recommended for testing notification features.
