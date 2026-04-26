@@ -1850,289 +1850,6 @@ select:focus {
     max-width: 320px;
   }
 }
-/* 3D isometric action buttons for Image / GIF / Send */
-
-.image-upload-button,
-.gif-picker-wrapper > button,
-.send-button {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  height: 44px;
-  min-width: 74px;
-  padding: 0 16px;
-
-  border: none;
-  border-radius: 0;
-  text-decoration: none;
-  line-height: 44px;
-  vertical-align: middle;
-
-  background: #111827;
-  color: #d1d5db;
-  font-weight: 800;
-  letter-spacing: 0.02em;
-
-  box-shadow: -0.55em 0.55em 0 #d1d5db;
-  transform: rotate(-6deg) skew(10deg, 2deg);
-  transition:
-    transform 0.22s linear,
-    background 0.22s linear,
-    color 0.22s linear,
-    box-shadow 0.22s linear;
-}
-
-.image-upload-button::before,
-.gif-picker-wrapper > button::before,
-.send-button::before,
-.image-upload-button::after,
-.gif-picker-wrapper > button::after,
-.send-button::after {
-  content: "";
-  position: absolute;
-  transition:
-    width 0.22s linear,
-    height 0.22s linear,
-    top 0.22s linear,
-    bottom 0.22s linear,
-    left 0.22s linear,
-    background 0.22s linear;
-}
-
-.image-upload-button::before,
-.gif-picker-wrapper > button::before,
-.send-button::before {
-  width: 0.45em;
-  height: 100%;
-  top: 0.22em;
-  left: -0.45em;
-  background: #0f172a;
-  transform: skewY(-45deg);
-}
-
-.image-upload-button::after,
-.gif-picker-wrapper > button::after,
-.send-button::after {
-  width: 0.45em;
-  height: 100%;
-  bottom: -0.45em;
-  left: 1.1em;
-  background: #020617;
-  transform: rotate(90deg) skew(0, 45deg);
-}
-
-.image-upload-button:hover,
-.gif-picker-wrapper > button:hover,
-.send-button:hover {
-  background: #ff6e42;
-  color: #ffffff;
-  transform: rotate(-6deg) skew(10deg, 2deg) translate(0.45em, -0.45em);
-  box-shadow: -0.9em 0.9em 0 #d1d5db;
-}
-
-.image-upload-button:hover::before,
-.gif-picker-wrapper > button:hover::before,
-.send-button:hover::before {
-  background: #b65234;
-  width: 0.9em;
-  top: 0.45em;
-  left: -0.9em;
-}
-
-.image-upload-button:hover::after,
-.gif-picker-wrapper > button:hover::after,
-.send-button:hover::after {
-  background: #b65234;
-  width: 0.9em;
-  bottom: -0.9em;
-  left: 0.9em;
-}
-
-/* Give each button a slightly different default color */
-.image-upload-button {
-  background: #064e3b;
-  color: #d1fae5;
-}
-
-.gif-picker-wrapper > button {
-  background: #312e81;
-  color: #e0e7ff;
-}
-
-.send-button {
-  background: #1e3a8a;
-  color: #dbeafe;
-}
-
-/* Keep buttons aligned with the growing textarea */
-.image-upload-button,
-.gif-picker-wrapper,
-.send-button {
-  align-self: end;
-}
-
-.gif-picker-wrapper {
-  position: relative;
-  flex-shrink: 0;
-}
-
-/* Prevent pseudo elements from blocking clicks */
-.image-upload-button::before,
-.gif-picker-wrapper > button::before,
-.send-button::before,
-.image-upload-button::after,
-.gif-picker-wrapper > button::after,
-.send-button::after {
-  pointer-events: none;
-}
-
-/* Mobile: use normal rectangular buttons to avoid layout explosion */
-@media (max-width: 620px) {
-  .image-upload-button,
-  .gif-picker-wrapper > button,
-  .send-button {
-    width: 100%;
-    min-width: 0;
-    transform: none;
-    border-radius: 12px;
-    box-shadow: none;
-  }
-
-  .image-upload-button:hover,
-  .gif-picker-wrapper > button:hover,
-  .send-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.16);
-  }
-
-  .image-upload-button::before,
-  .gif-picker-wrapper > button::before,
-  .send-button::before,
-  .image-upload-button::after,
-  .gif-picker-wrapper > button::after,
-  .send-button::after {
-    display: none;
-  }
-}
-/* Fix 3D buttons: remove black block over text */
-
-.image-upload-button,
-.gif-picker-wrapper > button,
-.send-button {
-  position: relative;
-  isolation: isolate;
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  height: 44px;
-  min-width: 78px;
-  padding: 0 18px;
-
-  border: none;
-  border-radius: 10px;
-  overflow: visible;
-
-  color: #ffffff;
-  font-weight: 800;
-  letter-spacing: 0.02em;
-  line-height: 1;
-
-  transform: skew(-8deg);
-  box-shadow:
-    -8px 8px 0 rgba(15, 23, 42, 0.9),
-    -12px 12px 0 rgba(209, 213, 219, 0.9);
-
-  transition:
-    transform 0.18s ease,
-    box-shadow 0.18s ease,
-    filter 0.18s ease;
-}
-
-.image-upload-button {
-  background: #065f46;
-}
-
-.gif-picker-wrapper > button {
-  background: #3730a3;
-}
-
-.send-button {
-  background: #1e3a8a;
-}
-
-/* Remove old side faces that caused the black block */
-.image-upload-button::before,
-.image-upload-button::after,
-.gif-picker-wrapper > button::before,
-.gif-picker-wrapper > button::after,
-.send-button::before,
-.send-button::after {
-  display: none !important;
-  content: none !important;
-}
-
-.image-upload-button:hover,
-.gif-picker-wrapper > button:hover,
-.send-button:hover {
-  transform: skew(-8deg) translate(6px, -6px);
-  box-shadow:
-    -12px 12px 0 rgba(15, 23, 42, 0.9),
-    -17px 17px 0 rgba(209, 213, 219, 0.9);
-  filter: brightness(1.08);
-}
-
-.image-upload-button:active,
-.gif-picker-wrapper > button:active,
-.send-button:active {
-  transform: skew(-8deg) translate(2px, -2px);
-  box-shadow:
-    -6px 6px 0 rgba(15, 23, 42, 0.9),
-    -9px 9px 0 rgba(209, 213, 219, 0.9);
-}
-
-/* Keep text visually unskewed */
-.image-upload-button,
-.gif-picker-wrapper > button,
-.send-button {
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
-}
-
-/* Keep buttons aligned with textarea */
-.image-upload-button,
-.gif-picker-wrapper,
-.send-button {
-  align-self: end;
-}
-
-@media (max-width: 620px) {
-  .image-upload-button,
-  .gif-picker-wrapper > button,
-  .send-button {
-    width: 100%;
-    min-width: 0;
-    transform: none;
-    border-radius: 12px;
-    box-shadow: none;
-  }
-
-  .image-upload-button:hover,
-  .gif-picker-wrapper > button:hover,
-  .send-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.16);
-  }
-
-  .image-upload-button:active,
-  .gif-picker-wrapper > button:active,
-  .send-button:active {
-    transform: translateY(0);
-    box-shadow: none;
-  }
-}
 /* Profile page preview */
 
 .profile-page {
@@ -2340,4 +2057,314 @@ select:focus {
     grid-column: 1 / -1;
     width: 100%;
   }
+}
+/* Exact isometric list-item style for Image / GIF / Send */
+
+.message-input-controls {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 42px;
+  width: 100%;
+}
+
+.chat-action-list {
+  list-style: none;
+  margin: 0 22px 18px 0;
+  padding: 0;
+  position: relative;
+  display: flex;
+  gap: 0;
+  transform: rotate(-35deg) skew(20deg, 5deg);
+  transform-origin: center;
+}
+
+.chat-action-list li {
+  margin: 0;
+  padding: 0;
+}
+
+.list-item {
+  background: #000;
+  color: #575757;
+  text-align: center;
+  height: 2.5em;
+  width: 4em;
+  vertical-align: middle;
+  line-height: 2.5em;
+  border-bottom: 1px solid #060606;
+  position: relative;
+  display: block;
+  text-decoration: none;
+  box-shadow: -2em 1.5em 0 #e1e1e1;
+  transition: all 0.25s linear;
+  border-radius: 0;
+  padding: 0;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 14px;
+  overflow: visible;
+}
+
+.list-item:hover {
+  background: #ff6e42;
+  color: #fffcfb;
+  transform: translate(0.9em, -0.9em);
+  transition: all 0.25s linear;
+  box-shadow: -2em 2em 0 #e1e1e1;
+}
+
+.list-item::before,
+.list-item::after {
+  content: "";
+  position: absolute;
+  transition: all 0.25s linear;
+  width: 0.5em;
+  pointer-events: none;
+}
+
+.list-item::before {
+  height: 2.5em;
+  background: #121212;
+  top: 0.25em;
+  left: -0.5em;
+  transform: skewY(-45deg);
+}
+
+.list-item::after {
+  height: 4em;
+  background: #181818;
+  bottom: -2.25em;
+  left: 1.5em;
+  transform: rotate(90deg) skew(0, 45deg);
+}
+
+.list-item:hover::before,
+.list-item:hover::after {
+  transition: all 0.25s linear;
+}
+
+.list-item:hover::before {
+  background: #b65234;
+  width: 1em;
+  top: 0.5em;
+  left: -1em;
+}
+
+.list-item:hover::after {
+  background: #b65234;
+  width: 1em;
+  bottom: -2.5em;
+  left: 1em;
+  height: 4em;
+}
+
+/* Make existing Image / GIF / Send styles stop overriding the list-item effect */
+
+.image-upload-button.list-item,
+.gif-picker-wrapper > .list-item,
+.send-button.list-item {
+  min-width: 0;
+  min-height: 0;
+  border-radius: 0;
+  transform: none;
+  box-shadow: -2em 1.5em 0 #e1e1e1;
+}
+
+.image-upload-button.list-item:hover,
+.gif-picker-wrapper > .list-item:hover,
+.send-button.list-item:hover {
+  transform: translate(0.9em, -0.9em);
+  box-shadow: -2em 2em 0 #e1e1e1;
+}
+
+.gif-picker-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* Keep GIPHY panel independent from the rotated button group */
+
+.gif-picker-panel {
+  transform: none;
+}
+
+/* Mobile fallback */
+
+@media (max-width: 620px) {
+  .message-input-controls {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .chat-action-list {
+    transform: none;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin: 0;
+  }
+
+  .list-item,
+  .image-upload-button.list-item,
+  .gif-picker-wrapper > .list-item,
+  .send-button.list-item {
+    width: 100%;
+    height: 42px;
+    line-height: 42px;
+    box-shadow: none;
+    border-radius: 10px;
+  }
+
+  .list-item::before,
+  .list-item::after {
+    display: none;
+  }
+
+  .list-item:hover,
+  .image-upload-button.list-item:hover,
+  .gif-picker-wrapper > .list-item:hover,
+  .send-button.list-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.16);
+  }
+}
+/* Image / GIF / Send: horizontal block buttons, lift upward only */
+
+.message-input-controls {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 20px;
+  width: 100%;
+}
+
+.chat-action-list {
+  list-style: none;
+  margin: 0 0 10px 0;
+  padding: 0;
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  transform: none;
+}
+
+.chat-action-list li {
+  margin: 0;
+  padding: 0;
+}
+
+.list-item,
+.image-upload-button.list-item,
+.gif-picker-wrapper > .list-item,
+.send-button.list-item {
+  width: 4em;
+  height: 2.5em;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+
+  display: block;
+  position: relative;
+
+  background: #000 !important;
+  color: #575757 !important;
+  text-align: center;
+  text-decoration: none;
+  line-height: 2.5em;
+  vertical-align: middle;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  cursor: pointer;
+  overflow: visible;
+
+  box-shadow: 0 14px 0 #e1e1e1;
+  transform: translateY(0);
+  transition:
+    transform 0.25s linear,
+    background 0.25s linear,
+    color 0.25s linear,
+    box-shadow 0.25s linear;
+}
+
+.list-item::before,
+.list-item::after,
+.image-upload-button.list-item::before,
+.image-upload-button.list-item::after,
+.gif-picker-wrapper > .list-item::before,
+.gif-picker-wrapper > .list-item::after,
+.send-button.list-item::before,
+.send-button.list-item::after {
+  display: none !important;
+  content: none !important;
+}
+
+.list-item:hover,
+.image-upload-button.list-item:hover,
+.gif-picker-wrapper > .list-item:hover,
+.send-button.list-item:hover {
+  background: #ff6e42 !important;
+  color: #fffcfb !important;
+  transform: translateY(-12px);
+  box-shadow: 0 22px 0 #e1e1e1;
+}
+
+.gif-picker-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.gif-picker-panel {
+  transform: none;
+}
+
+/* Mobile fallback */
+
+@media (max-width: 620px) {
+  .message-input-controls {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .chat-action-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin: 0;
+  }
+
+  .list-item,
+  .image-upload-button.list-item,
+  .gif-picker-wrapper > .list-item,
+  .send-button.list-item {
+    width: 100%;
+    height: 42px;
+    line-height: 42px;
+    border-radius: 10px;
+    box-shadow: none;
+  }
+
+  .list-item:hover,
+  .image-upload-button.list-item:hover,
+  .gif-picker-wrapper > .list-item:hover,
+  .send-button.list-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.16);
+  }
+}
+.image-upload-button.list-item {
+  background: #065f46 !important;
+  color: #d1fae5 !important;
+}
+
+.gif-picker-wrapper > .list-item {
+  background: #3730a3 !important;
+  color: #e0e7ff !important;
+}
+
+.send-button.list-item {
+  background: #1e3a8a !important;
+  color: #dbeafe !important;
 }

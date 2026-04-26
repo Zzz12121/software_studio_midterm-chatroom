@@ -244,21 +244,33 @@ export default function MessageInput({
           rows={1}
         />
 
-        <label className="image-upload-button">
-          Image
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            style={{ display: "none" }}
-          />
-        </label>
+        <ul className="chat-action-list">
+          <li>
+            <label className="list-item image-upload-button">
+              Image
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                style={{ display: "none" }}
+              />
+            </label>
+          </li>
 
-        <GifPicker onSelectGif={handleSendGif} resetKey={chatroomId} />
+          <li>
+            <GifPicker
+              onSelectGif={handleSendGif}
+              resetKey={chatroomId}
+              buttonClassName="list-item"
+            />
+          </li>
 
-        <button type="submit" className="send-button">
-          Send
-        </button>
+          <li>
+            <button type="submit" className="list-item send-button">
+              Send
+            </button>
+          </li>
+        </ul>
       </form>
     </div>
   );

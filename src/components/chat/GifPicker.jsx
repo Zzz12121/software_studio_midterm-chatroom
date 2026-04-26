@@ -2,7 +2,11 @@ import { useEffect, useRef, useState } from "react";
 
 const GIPHY_API_KEY = import.meta.env.VITE_GIPHY_API_KEY;
 
-export default function GifPicker({ onSelectGif, resetKey }) {
+export default function GifPicker({
+  onSelectGif,
+  resetKey,
+  buttonClassName = "",
+}) {
   const [open, setOpen] = useState(false);
   const [keyword, setKeyword] = useState("");
   const [gifs, setGifs] = useState([]);
@@ -14,13 +18,17 @@ export default function GifPicker({ onSelectGif, resetKey }) {
   useEffect(() => {
     function handleClickOutside(e) {
       if (!open) return;
+
       if (pickerRef.current && !pickerRef.current.contains(e.target)) {
         setOpen(false);
       }
     }
 
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, [open]);
 
   useEffect(() => {
@@ -127,6 +135,7 @@ export default function GifPicker({ onSelectGif, resetKey }) {
     <div className="gif-picker-wrapper" ref={pickerRef}>
       <button
         type="button"
+        className={buttonClassName}
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
