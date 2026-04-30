@@ -26,6 +26,7 @@ export default function MessageList({
   const [editingText, setEditingText] = useState("");
   const [highlightedMessageId, setHighlightedMessageId] = useState("");
   const [userMap, setUserMap] = useState({});
+
   const messageRefs = useRef({});
   const bottomRef = useRef(null);
 
@@ -53,59 +54,60 @@ export default function MessageList({
   }, [chatroomId]);
 
   useEffect(() => {
-  async function fetchUsers() {
-    const uidSet = new Set();
+    async function fetchUsers() {
+      const uidSet = new Set();
 
-    messages.forEach((message) => {
-      if (message.senderId) {
-        uidSet.add(message.senderId);
-      }
-
-      if (message.replyTo?.senderId) {
-        uidSet.add(message.replyTo.senderId);
-      }
-    });
-
-    const uidList = Array.from(uidSet);
-
-    if (uidList.length === 0) {
-      setUserMap({});
-      return;
-    }
-
-    try {
-      const result = {};
-
-      for (const uid of uidList) {
-        const userSnap = await getDoc(doc(db, "users", uid));
-
-        if (userSnap.exists()) {
-          const data = userSnap.data();
-
-          result[uid] = {
-            uid,
-            username: data.username || "",
-            email: data.email || "",
-            photoURL: data.photoURL || "",
-          };
-        } else {
-          result[uid] = {
-            uid,
-            username: "",
-            email: "",
-            photoURL: "",
-          };
+      messages.forEach((message) => {
+        if (message.senderId) {
+          uidSet.add(message.senderId);
         }
+
+        if (message.replyTo?.senderId) {
+          uidSet.add(message.replyTo.senderId);
+        }
+      });
+
+      const uidList = Array.from(uidSet);
+
+      if (uidList.length === 0) {
+        setUserMap({});
+        return;
       }
 
-      setUserMap(result);
-    } catch (error) {
-      console.error("Fetch message users error:", error);
-    }
-  }
+      try {
+        const result = {};
 
-  fetchUsers();
-}, [messages]);
+        for (const uid of uidList) {
+          const userSnap = await getDoc(doc(db, "users", uid));
+
+          if (userSnap.exists()) {
+            const data = userSnap.data();
+
+            result[uid] = {
+              uid,
+              username: data.username || "",
+              email: data.email || "",
+              photoURL: data.photoURL || "",
+            };
+          } else {
+            result[uid] = {
+              uid,
+              username: "",
+              email: "",
+              photoURL: "",
+            };
+          }
+        }
+
+        setUserMap(result);
+      } catch (error) {
+        console.error("Fetch message users error:", error);
+      }
+    }
+
+    fetchUsers();
+  }, [messages]);
+
   async function updateChatroomLastMessage() {
     try {
       const latestQuery = query(
@@ -233,11 +235,13 @@ export default function MessageList({
     return user.photoURL || "";
   }
 
-  function scrollToBottom() {
+  function scrollToBottom(behavior = "auto") {
     requestAnimationFrame(() => {
-      bottomRef.current?.scrollIntoView({
-        behavior: "auto",
-        block: "end",
+      requestAnimationFrame(() => {
+        bottomRef.current?.scrollIntoView({
+          behavior,
+          block: "end",
+        });
       });
     });
   }
@@ -266,7 +270,13 @@ export default function MessageList({
     if (!chatroomId) return;
     if (filteredMessages.length === 0) return;
 
-    scrollToBottom();
+    scrollToBottom("auto");
+
+    const timer = setTimeout(() => {
+      scrollToBottom("auto");
+    }, 250);
+
+    return () => clearTimeout(timer);
   }, [chatroomId, filteredMessages.length]);
 
   if (!chatroomId) {
@@ -311,49 +321,51 @@ export default function MessageList({
               position: "relative",
             }}
           >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              marginBottom: "6px",
-            }}
-          >
             <div
               style={{
-                width: "28px",
-                height: "28px",
-                borderRadius: "50%",
-                background: "#bfdbfe",
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "center",
-                overflow: "hidden",
-                flexShrink: 0,
-                fontSize: "12px",
-                fontWeight: "bold",
+                gap: "8px",
+                marginBottom: "6px",
               }}
             >
-              {getUserPhotoURL(message.senderId) ? (
-                <img
-                  src={getUserPhotoURL(message.senderId)}
-                  alt="avatar"
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                  }}
-                />
-              ) : (
-                (getUserDisplayName(message.senderId) || "?").charAt(0).toUpperCase()
-              )}
-            </div>
+              <div
+                style={{
+                  width: "28px",
+                  height: "28px",
+                  borderRadius: "50%",
+                  background: "#bfdbfe",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  overflow: "hidden",
+                  flexShrink: 0,
+                  fontSize: "12px",
+                  fontWeight: "bold",
+                }}
+              >
+                {getUserPhotoURL(message.senderId) ? (
+                  <img
+                    src={getUserPhotoURL(message.senderId)}
+                    alt="avatar"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                  />
+                ) : (
+                  (getUserDisplayName(message.senderId) || "?")
+                    .charAt(0)
+                    .toUpperCase()
+                )}
+              </div>
 
-            <p style={{ margin: 0, fontSize: "12px", opacity: 0.75 }}>
-              {getUserDisplayName(message.senderId)}
-              {isMine ? " (You)" : ""}
-            </p>
-          </div>
+              <p style={{ margin: 0, fontSize: "12px", opacity: 0.75 }}>
+                {getUserDisplayName(message.senderId)}
+                {isMine ? " (You)" : ""}
+              </p>
+            </div>
 
             {message.replyTo && (
               <div
@@ -371,6 +383,7 @@ export default function MessageList({
                   回覆：{getUserDisplayName(message.replyTo.senderId)}
                   {message.replyTo.senderId === currentUserId ? " (You)" : ""}
                 </p>
+
                 <p className="safe-message-text" style={{ fontSize: "14px" }}>
                   {message.replyTo.text || "[圖片]"}
                 </p>
@@ -378,7 +391,9 @@ export default function MessageList({
             )}
 
             {message.unsent ? (
-              <p style={{ margin: "6px 0 0 0", opacity: 0.6 }}>此訊息已收回</p>
+              <p style={{ margin: "6px 0 0 0", opacity: 0.6 }}>
+                此訊息已收回
+              </p>
             ) : isEditing ? (
               <div style={{ marginTop: "8px" }}>
                 <input
@@ -386,6 +401,7 @@ export default function MessageList({
                   onChange={(e) => setEditingText(e.target.value)}
                   style={{ width: "100%", marginBottom: "8px" }}
                 />
+
                 <div style={{ display: "flex", gap: "8px" }}>
                   <button onClick={() => saveEdit(message.id)}>Save</button>
                   <button onClick={cancelEdit}>Cancel</button>
@@ -404,8 +420,15 @@ export default function MessageList({
                     display: "block",
                   }}
                 />
+
                 {message.imageName && (
-                  <p style={{ margin: "6px 0 0 0", fontSize: "12px", opacity: 0.7 }}>
+                  <p
+                    style={{
+                      margin: "6px 0 0 0",
+                      fontSize: "12px",
+                      opacity: 0.7,
+                    }}
+                  >
                     {message.imageName}
                   </p>
                 )}
@@ -424,18 +447,28 @@ export default function MessageList({
                   }}
                 />
 
-                <p style={{ margin: "6px 0 0 0", fontSize: "12px", opacity: 0.7 }}>
+                <p
+                  style={{
+                    margin: "6px 0 0 0",
+                    fontSize: "12px",
+                    opacity: 0.7,
+                  }}
+                >
                   GIF via GIPHY
                 </p>
               </div>
             ) : (
-              <p className="safe-message-text">
-                {message.text}
-              </p>
+              <p className="safe-message-text">{message.text}</p>
             )}
 
             {message.edited && !message.unsent && (
-              <p style={{ margin: "6px 0 0 0", fontSize: "12px", opacity: 0.6 }}>
+              <p
+                style={{
+                  margin: "6px 0 0 0",
+                  fontSize: "12px",
+                  opacity: 0.6,
+                }}
+              >
                 已編輯
               </p>
             )}
@@ -477,6 +510,7 @@ export default function MessageList({
           </div>
         );
       })}
+
       <div ref={bottomRef} />
     </div>
   );

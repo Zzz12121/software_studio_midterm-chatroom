@@ -639,7 +639,8 @@ The app supports Chrome notifications for unread messages.
 src/components/chat/NotificationManager.jsx
 src/components/chat/ChatroomList.jsx
 ```
-
+<img src="./img/unread.png" alt="Opening Animation" width="700">
+<img src="./img/notification.png" alt="Opening Animation" width="700">
 ---
 
 ## 21. CSS Animation
