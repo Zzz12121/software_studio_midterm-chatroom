@@ -9,6 +9,13 @@ import {
 } from "firebase/firestore";
 import { db } from "../../firebase/firebase";
 
+/*
+  This is outside the component on purpose.
+  React StrictMode in npm run dev may mount effects twice.
+  A module-level Set prevents the same message notification from being shown twice.
+*/
+const globalNotifiedKeys = new Set();
+
 export default function ChatroomList({
   currentUserId,
   selectedChatroomId,
@@ -18,7 +25,6 @@ export default function ChatroomList({
   const [userMap, setUserMap] = useState({});
 
   const lastSeenMapRef = useRef({});
-  const notifiedMapRef = useRef({});
   const initializedRef = useRef(false);
   const selectedChatroomIdRef = useRef(selectedChatroomId);
 
@@ -34,6 +40,7 @@ export default function ChatroomList({
         if (selectedRoom) {
           const ts = selectedRoom.lastMessageAt?.toMillis?.() || Date.now();
           lastSeenMapRef.current[selectedChatroomId] = ts;
+          globalNotifiedKeys.add(`${selectedChatroomId}-${ts}`);
         }
 
         return prevRooms.map((room) =>
@@ -82,6 +89,8 @@ export default function ChatroomList({
   }
 
   useEffect(() => {
+    if (!currentUserId) return;
+
     const q = query(collection(db, "chatrooms"), orderBy("updatedAt", "desc"));
 
     const unsubscribe = onSnapshot(q, async (snapshot) => {
@@ -103,7 +112,7 @@ export default function ChatroomList({
         rooms.forEach((room) => {
           const lastMessageAtMs = room.lastMessageAt?.toMillis?.() || 0;
           lastSeenMapRef.current[room.id] = lastMessageAtMs;
-          notifiedMapRef.current[room.id] = lastMessageAtMs;
+          globalNotifiedKeys.add(`${room.id}-${lastMessageAtMs}`);
         });
 
         initializedRef.current = true;
@@ -121,14 +130,13 @@ export default function ChatroomList({
       const mappedRooms = rooms.map((room) => {
         const lastMessageAtMs = room.lastMessageAt?.toMillis?.() || 0;
         const seenAtMs = lastSeenMapRef.current[room.id] || 0;
-        const notifiedAtMs = notifiedMapRef.current[room.id] || 0;
 
         const isSelected = room.id === currentSelectedId;
         const isOwnLastMessage = room.lastSenderId === currentUserId;
 
         if (isSelected || isOwnLastMessage) {
           lastSeenMapRef.current[room.id] = lastMessageAtMs;
-          notifiedMapRef.current[room.id] = lastMessageAtMs;
+          globalNotifiedKeys.add(`${room.id}-${lastMessageAtMs}`);
 
           return {
             ...room,
@@ -137,7 +145,12 @@ export default function ChatroomList({
         }
 
         const hasUnread = lastMessageAtMs > seenAtMs;
-        const shouldNotify = hasUnread && lastMessageAtMs > notifiedAtMs;
+        const notifyKey = `${room.id}-${lastMessageAtMs}`;
+
+        const shouldNotify =
+          hasUnread &&
+          lastMessageAtMs > 0 &&
+          !globalNotifiedKeys.has(notifyKey);
 
         if (
           shouldNotify &&
@@ -146,11 +159,23 @@ export default function ChatroomList({
         ) {
           const display = getRoomDisplay(room);
 
-          new Notification(display.name || "聊天室", {
+          /*
+            Add the key BEFORE new Notification.
+            This prevents duplicated notifications if Firestore snapshot
+            fires twice for the same message.
+          */
+          globalNotifiedKeys.add(notifyKey);
+
+          const notification = new Notification(display.name || "聊天室", {
             body: room.lastMessage || "你有未讀訊息",
+            tag: notifyKey,
+            renotify: false,
           });
 
-          notifiedMapRef.current[room.id] = lastMessageAtMs;
+          notification.onclick = () => {
+            window.focus();
+            notification.close();
+          };
         }
 
         return {
@@ -195,7 +220,7 @@ export default function ChatroomList({
     const ts = room.lastMessageAt?.toMillis?.() || Date.now();
 
     lastSeenMapRef.current[room.id] = ts;
-    notifiedMapRef.current[room.id] = ts;
+    globalNotifiedKeys.add(`${room.id}-${ts}`);
 
     setChatrooms((prevRooms) =>
       prevRooms.map((item) =>
