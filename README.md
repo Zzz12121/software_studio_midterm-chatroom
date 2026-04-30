@@ -1276,7 +1276,7 @@ If your local folder name is different, enter the folder that contains `package.
 npm install
 ```
 
-Do not upload `node_modules` when submitting the project.
+
 
 ---
 
@@ -1377,13 +1377,10 @@ The GIF feature requires:
 ```env
 VITE_GIPHY_API_KEY=your_giphy_api_key
 ```
+or
+```env
+VITE_GIPHY_API_KEY=WwvcJWjuidOln7uvc3iDZnuxoNWNZfFU
+```
 
 Without this key, the GIF search panel cannot search GIFs.
 
-## Firebase Storage
-
-Firebase Storage is not required for this project implementation.
-
-## Browser
-
-Chrome is recommended for testing notification features.
