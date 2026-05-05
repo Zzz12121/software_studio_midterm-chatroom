@@ -4,10 +4,193 @@ Strong Bruce Chatroom is a real-time web chatroom application built with React, 
 
 This README explains:
 
-1. how to operate the website,
-2. where each scoring-related function is implemented,
-3. how TAs can find and test each function,
-4. how to set up the project locally.
+1. how to set up the project locally.
+2. how to operate the website,
+3. where each scoring-related function is implemented,
+4. how TAs can find and test each function,
+
+# Local Setup
+
+This project can be run locally from either the GitHub repository or the submitted zip file.
+
+---
+
+## 1. Get the Project
+
+### Option A: Clone from GitHub
+
+```bash
+git clone https://github.com/Zzz12121/software_studio_midterm-chatroom.git
+cd software_studio_midterm-chatroom
+```
+
+### Option B: Use the Submitted Zip File
+
+1. Unzip the submitted project.
+2. Open the unzipped folder.
+3. Enter the folder that contains `package.json`.
+
+For example:
+
+```bash
+cd path/to/software_studio_midterm-chatroom-main
+```
+
+If your local folder name is different, just make sure you are inside the folder that contains:
+
+```text
+package.json
+src
+README.md
+```
+
+---
+
+## 2. Install Node.js
+
+If Node.js is not installed, download and install the **LTS version** from the official Node.js website.
+
+After installation, open PowerShell or terminal and check:
+
+```bash
+node -v
+npm -v
+```
+
+If versions are shown, Node.js and npm are installed correctly.
+
+Example:
+
+```text
+v20.x.x
+10.x.x
+```
+
+If `node -v` works but `npm -v` is blocked by PowerShell execution policy, use `npm.cmd` instead:
+
+```bash
+npm.cmd -v
+```
+
+If `npm.cmd -v` works, use `npm.cmd` for the following commands:
+
+```bash
+npm.cmd install
+npm.cmd run dev
+```
+
+---
+
+## 3. Install Dependencies
+
+In the project root folder, run:
+
+```bash
+npm install
+```
+
+If PowerShell blocks `npm`, use:
+
+```bash
+npm.cmd install
+```
+
+This will create the `node_modules` folder locally.
+
+`node_modules` is required to run the project locally, but it should not be included in the submitted zip file.
+
+---
+
+## 4. Create Environment File for GIPHY
+
+Create a file named `.env` in the project root folder.Type this below
+
+```env
+VITE_GIPHY_API_KEY=your_giphy_api_key
+```
+or use mine
+```env
+VITE_GIPHY_API_KEY=WwvcJWjuidOln7uvc3iDZnuxoNWNZfFU
+```
+This key is required for the GIF search feature.
+
+If the key is not provided, the main chatroom functions still work, but GIF search will not work.
+
+---
+
+## 5. Start the Local Development Server
+
+Run:
+
+```bash
+npm run dev
+```
+
+If PowerShell blocks the command, use:
+
+```bash
+npm.cmd run dev
+```
+
+Then open the local URL shown in the terminal, usually:
+
+```text
+http://localhost:5173/
+```
+
+---
+
+## 6. Firebase Note
+
+No extra Firebase setup is required for local testing.
+
+The Firebase configuration is already included in:
+
+```text
+src/firebase/firebase.js
+```
+
+TAs only need to run the project locally with:
+
+```bash
+npm install
+npm run dev
+```
+
+or, if PowerShell blocks `npm`:
+
+```bash
+npm.cmd install
+npm.cmd run dev
+```
+
+The local website will connect to the existing Firebase project used by this app.
+
+---
+
+## 7. Build Check
+
+To check whether the production build works, run:
+
+```bash
+npm run build
+```
+
+If PowerShell blocks `npm`, use:
+
+```bash
+npm.cmd run build
+```
+
+The production build output is generated in:
+
+```text
+dist/
+```
+
+Do not directly double-click `dist/index.html`, because Vite projects should be served through a local server.
+
+---
 
 ---
 
@@ -1257,130 +1440,3 @@ Maximum counted bonus: 10%
 
 ---
 -->
-# Local Setup
-
-## 1. Clone the Repository
-
-```bash
-git clone https://github.com/Zzz12121/software_studio_midterm-chatroom.git
-cd software_studio_midterm-chatroom
-```
-
-If your local folder name is different, enter the folder that contains `package.json`.
-
----
-
-## 2. Install Dependencies
-
-```bash
-npm install
-```
-
-
-
----
-
-## 3. Create Environment File
-
-Create a `.env` file in the project root.
-
-```env
-VITE_GIPHY_API_KEY=your_giphy_api_key
-```
-or
-```env
-VITE_GIPHY_API_KEY=WwvcJWjuidOln7uvc3iDZnuxoNWNZfFU
-```
-This is required for the GIF search feature.
-
----
-
-## 4. Firebase Configuration
-
-The Firebase config is located in:
-
-```text
-src/firebase/firebase.js
-```
-
-This project uses:
-
-- Firebase Authentication
-- Cloud Firestore
-- Firebase Hosting
-
-For local testing, the Firebase project must have:
-
-- Email/Password sign-in enabled
-- Google sign-in enabled
-- Cloud Firestore enabled
-- authorized domains set correctly for Google login
-
----
-
-## 5. Start the Local Development Server
-
-```bash
-npm run dev
-```
-
-Then open the local URL shown in the terminal, usually:
-
-```text
-http://localhost:5173/
-```
-
----
-
-## 6. Build for Production
-
-```bash
-npm run build
-```
-
-The production build output is generated in:
-
-```text
-dist/
-```
-
----
-
-## 7. Deploy to Firebase Hosting
-
-```bash
-firebase deploy
-```
-
-The project uses `dist` as the Firebase Hosting public directory.
-
----
-
-# Known Notes
-
-## Image Storage
-
-Image messages are stored as Base64 data in Firestore for demo purposes. To avoid exceeding Firestore document size limitations, the app restricts image size.
-
-## Profile Picture
-
-Profile pictures use image URLs. The profile edit page shows an instant preview before saving.
-
-## GIF Storage
-
-GIF messages use GIPHY URLs instead of storing GIF files directly. Firestore only stores GIF metadata and URL fields.
-
-## GIPHY API Key
-
-The GIF feature requires:
-
-```env
-VITE_GIPHY_API_KEY=your_giphy_api_key
-```
-or
-```env
-VITE_GIPHY_API_KEY=WwvcJWjuidOln7uvc3iDZnuxoNWNZfFU
-```
-
-Without this key, the GIF search panel cannot search GIFs.
-
